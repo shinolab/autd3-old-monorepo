@@ -1,0 +1,287 @@
+<!DOCTYPE HTML>
+<html lang="en" class="navy" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Simulaotr - AUTD3 Developers Manual v18.0.1</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../.././theme/codeblock_filename.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "navy";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('navy')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../../about_AUTD3.html"><strong aria-hidden="true">1.</strong> About AUTD3</a></li><li class="chapter-item expanded "><a href="../../Users_Manual/users_manual.html"><strong aria-hidden="true">2.</strong> SDK User's Manual</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../Users_Manual/concept.html"><strong aria-hidden="true">2.1.</strong> Concept</a></li><li class="chapter-item expanded "><a href="../../Users_Manual/getting_started.html"><strong aria-hidden="true">2.2.</strong> Tutorial</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../Users_Manual/getting_started/rust.html"><strong aria-hidden="true">2.2.1.</strong> Rust</a></li><li class="chapter-item expanded "><a href="../../Users_Manual/getting_started/cpp.html"><strong aria-hidden="true">2.2.2.</strong> C++</a></li><li class="chapter-item expanded "><a href="../../Users_Manual/getting_started/cs.html"><strong aria-hidden="true">2.2.3.</strong> C#</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../Users_Manual/getting_started/unity.html"><strong aria-hidden="true">2.2.3.1.</strong> Unity</a></li></ol></li><li class="chapter-item expanded "><a href="../../Users_Manual/getting_started/python.html"><strong aria-hidden="true">2.2.4.</strong> Python</a></li></ol></li><li class="chapter-item expanded "><a href="../../Users_Manual/versioning.html"><strong aria-hidden="true">2.3.</strong> Versioning</a></li><li class="chapter-item expanded "><a href="../../Users_Manual/geometry.html"><strong aria-hidden="true">2.4.</strong> Geometry</a></li><li class="chapter-item expanded "><a href="../../Users_Manual/link.html"><strong aria-hidden="true">2.5.</strong> Link</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../Users_Manual/link/twincat.html"><strong aria-hidden="true">2.5.1.</strong> TwinCAT</a></li><li class="chapter-item expanded "><a href="../../Users_Manual/link/soem.html"><strong aria-hidden="true">2.5.2.</strong> SOEM</a></li><li class="chapter-item expanded "><a href="../../Users_Manual/link/simulator.html"><strong aria-hidden="true">2.5.3.</strong> Simulator</a></li></ol></li><li class="chapter-item expanded "><a href="../../Users_Manual/gain.html"><strong aria-hidden="true">2.6.</strong> Gain</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../Users_Manual/gain/null.html"><strong aria-hidden="true">2.6.1.</strong> Null</a></li><li class="chapter-item expanded "><a href="../../Users_Manual/gain/focus.html"><strong aria-hidden="true">2.6.2.</strong> Focus</a></li><li class="chapter-item expanded "><a href="../../Users_Manual/gain/bessel.html"><strong aria-hidden="true">2.6.3.</strong> Bessel</a></li><li class="chapter-item expanded "><a href="../../Users_Manual/gain/plane.html"><strong aria-hidden="true">2.6.4.</strong> Plane</a></li><li class="chapter-item expanded "><a href="../../Users_Manual/gain/uniform.html"><strong aria-hidden="true">2.6.5.</strong> Uniform</a></li><li class="chapter-item expanded "><a href="../../Users_Manual/gain/grouped.html"><strong aria-hidden="true">2.6.6.</strong> Group</a></li><li class="chapter-item expanded "><a href="../../Users_Manual/gain/holo.html"><strong aria-hidden="true">2.6.7.</strong> Holo</a></li><li class="chapter-item expanded "><a href="../../Users_Manual/gain/cache.html"><strong aria-hidden="true">2.6.8.</strong> Cache</a></li><li class="chapter-item expanded "><a href="../../Users_Manual/gain/transform.html"><strong aria-hidden="true">2.6.9.</strong> Transform</a></li></ol></li><li class="chapter-item expanded "><a href="../../Users_Manual/modulation.html"><strong aria-hidden="true">2.7.</strong> Modulation</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../Users_Manual/modulation/static.html"><strong aria-hidden="true">2.7.1.</strong> Static</a></li><li class="chapter-item expanded "><a href="../../Users_Manual/modulation/sine.html"><strong aria-hidden="true">2.7.2.</strong> Sine</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../Users_Manual/modulation/fourier.html"><strong aria-hidden="true">2.7.2.1.</strong> Fourier</a></li></ol></li><li class="chapter-item expanded "><a href="../../Users_Manual/modulation/square.html"><strong aria-hidden="true">2.7.3.</strong> Square</a></li><li class="chapter-item expanded "><a href="../../Users_Manual/modulation/wav.html"><strong aria-hidden="true">2.7.4.</strong> Wav</a></li><li class="chapter-item expanded "><a href="../../Users_Manual/modulation/rawpcm.html"><strong aria-hidden="true">2.7.5.</strong> RawPCM</a></li><li class="chapter-item expanded "><a href="../../Users_Manual/modulation/cache.html"><strong aria-hidden="true">2.7.6.</strong> Cache</a></li><li class="chapter-item expanded "><a href="../../Users_Manual/modulation/radiation.html"><strong aria-hidden="true">2.7.7.</strong> Radiation</a></li><li class="chapter-item expanded "><a href="../../Users_Manual/modulation/transform.html"><strong aria-hidden="true">2.7.8.</strong> Transform</a></li></ol></li><li class="chapter-item expanded "><a href="../../Users_Manual/stm.html"><strong aria-hidden="true">2.8.</strong> Spatio-Temporal Modulation</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../Users_Manual/stm/focus.html"><strong aria-hidden="true">2.8.1.</strong> FocusSTM</a></li><li class="chapter-item expanded "><a href="../../Users_Manual/stm/gain.html"><strong aria-hidden="true">2.8.2.</strong> GainSTM</a></li></ol></li><li class="chapter-item expanded "><a href="../../Users_Manual/silencer.html"><strong aria-hidden="true">2.9.</strong> Silencer</a></li><li class="chapter-item expanded "><a href="../../Users_Manual/controller.html"><strong aria-hidden="true">2.10.</strong> Controller</a></li><li class="chapter-item expanded "><a href="../../Users_Manual/advanced_examples/advanced_examples.html"><strong aria-hidden="true">2.11.</strong> Advanced examples</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../Users_Manual/advanced_examples/custom_gain.html"><strong aria-hidden="true">2.11.1.</strong> Custom Gain</a></li><li class="chapter-item expanded "><a href="../../Users_Manual/advanced_examples/custom_modulation.html"><strong aria-hidden="true">2.11.2.</strong> Custom Modulation</a></li></ol></li><li class="chapter-item expanded "><a href="../../Users_Manual/Simulator/simulator.html" class="active"><strong aria-hidden="true">2.12.</strong> Simulaotr</a></li><li class="chapter-item expanded "><a href="../../Users_Manual/FAQ/faq.html"><strong aria-hidden="true">2.13.</strong> FAQ</a></li><li class="chapter-item expanded "><a href="../../Users_Manual/Citation/citation.html"><strong aria-hidden="true">2.14.</strong> Citation</a></li><li class="chapter-item expanded "><a href="../../Users_Manual/LICENSE.html"><strong aria-hidden="true">2.15.</strong> License</a></li><li class="chapter-item expanded "><a href="../../Users_Manual/release_notes.html"><strong aria-hidden="true">2.16.</strong> Release notes</a></li></ol></li><li class="chapter-item expanded "><a href="../../document_history.html"><strong aria-hidden="true">3.</strong> Document history</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">AUTD3 Developers Manual v18.0.1</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/shinolab/autd3" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<h1 id="autd3-simulator"><a class="header" href="#autd3-simulator">AUTD3 Simulator</a></h1>
+<p>AUTD Simulator is a simulator for AUTD3 supporting Windows, Linux, and macOS.</p>
+<h2 id="autd-server"><a class="header" href="#autd-server">AUTD Server</a></h2>
+<p>The simulator is included in <code>AUTD Server</code>.
+Download the installer from <a href="https://github.com/shinolab/autd3/releases">GitHub Releases</a>.</p>
+<p>When you run <code>AUTD Server</code>, the following screen will appear, so open the “Simulator” tab and click “Run” button.</p>
+<figure>
+  <img src="../../fig/Users_Manual/autdserver_simulator.jpg"/>
+</figure>
+<p>When you run the simulator, it is waiting for connection.</p>
+<figure>
+  <img src="../../fig/sim_waiting.jpg"/>
+</figure>
+<p>In this state, when you <code>open</code> the <code>Controller</code> using <code>link::Simulator</code>, a black panel will appear on the simulator.</p>
+<figure>
+  <img src="../../fig/sim_init.jpg"/>
+</figure>
+<p>This black panel is called “Slice”, and this “Slice” can be used to visualize the sound field at an arbitrary position.
+The phase of the transducer is represented by hue, and its amplitude is represented by intensity.</p>
+<figure>
+  <img src="../../fig/sim_focus.jpg"/>
+</figure>
+<p>The sound field displayed in the simulator is a simple superposition of spherical waves; directivity and nonlinear effects are not taken into account.</p>
+<p>The GUI displayed on the left side of the screen is used to control “Slice” and the camera.
+The GUI is based on <a href="https://github.com/ocornut/imgui">Dear ImGui</a>.</p>
+<h3 id="slice-tab"><a class="header" href="#slice-tab">Slice tab</a></h3>
+<p>In the Slice tab, you can change the size, position, and rotation of the slice.
+The rotation is specified in terms of XYZ Euler angles.
+The “xy”, “yz”, and “zx” buttons are used to rotate the slice to a position parallel to each plane.</p>
+<p>You can select either “Acoustic” mode, which displays the sound pressure, or “Radiation” mode, which displays the square value of the sound pressure.</p>
+<p>In the “Color settings” section, you can change the coloring palette, color scale, and alpha value of the slice itself.
+If you use a large number of devices, colors may become saturated, in which case you should increase the value of color scale.</p>
+<h3 id="camera-tab"><a class="header" href="#camera-tab">Camera tab</a></h3>
+<p>In Camera tab, you can change camera position, rotation, field of view, near clip, and far clip.
+The rotation is specified in terms of XYZ Euler angles.</p>
+<h3 id="config-tab"><a class="header" href="#config-tab">Config tab</a></h3>
+<p>In the Config tab, you can set the sound speed, font size, and background color.</p>
+<p>You can also switch the show/enable/overheat settings for each device.
+When “show” is turned off, the devices contribute to the sound field only by not being displayed.
+When “enable” is turned off, it does not contribute to the sound field.</p>
+<p>When “View as device” is turned on, the transducers are displayed as AUTD3 3D models instead of simple circles.</p>
+<h3 id="info-tab"><a class="header" href="#info-tab">Info tab</a></h3>
+<p>In the Info tab, information on FPS, Silencer, Modulation, and STM can be checked.</p>
+<p>The Silencer setting can be checked, but it is not affected in the sound field.</p>
+<p>When “Mod enable” is set, the modulation is reflected in the sound field.</p>
+<p>The index of modulation data and STM is determined by system time.
+“System time” represents the system time, which is elapsed time in nanoseconds since January 1, 2000, 0:00:00.</p>
+<p>When “Auto play” is set, the system time is automatically incremented.
+Other wise, you can set the system time manually.</p>
+<h3 id="others"><a class="header" href="#others">Others</a></h3>
+<p>“Save image as file” allows you to save an image of the sound field displayed on the current Slice.</p>
+<p>“Auto” button automatically moves the camera to the appropriate location.
+“Reset” resets the camera to its beggining state.
+“Default” resets the camera to the default settings.</p>
+<p>The settings are stored in “settings.json”.
+One of the settings that can be changed only from this file is <code>vsync</code>: Setting <code>vsync</code> to <code>false</code> disables vertical synchronization.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../Users_Manual/advanced_examples/custom_modulation.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../Users_Manual/FAQ/faq.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../Users_Manual/advanced_examples/custom_modulation.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../Users_Manual/FAQ/faq.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../.././theme/codeblock_filename.js"></script>
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,644 @@
+<!DOCTYPE HTML>
+<html lang="en" class="navy" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Geometry - AUTD3 Developers Manual v18.0.1</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href=".././theme/codeblock_filename.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "navy";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('navy')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../about_AUTD3.html"><strong aria-hidden="true">1.</strong> About AUTD3</a></li><li class="chapter-item expanded "><a href="../Users_Manual/users_manual.html"><strong aria-hidden="true">2.</strong> SDK User's Manual</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../Users_Manual/concept.html"><strong aria-hidden="true">2.1.</strong> Concept</a></li><li class="chapter-item expanded "><a href="../Users_Manual/getting_started.html"><strong aria-hidden="true">2.2.</strong> Tutorial</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../Users_Manual/getting_started/rust.html"><strong aria-hidden="true">2.2.1.</strong> Rust</a></li><li class="chapter-item expanded "><a href="../Users_Manual/getting_started/cpp.html"><strong aria-hidden="true">2.2.2.</strong> C++</a></li><li class="chapter-item expanded "><a href="../Users_Manual/getting_started/cs.html"><strong aria-hidden="true">2.2.3.</strong> C#</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../Users_Manual/getting_started/unity.html"><strong aria-hidden="true">2.2.3.1.</strong> Unity</a></li></ol></li><li class="chapter-item expanded "><a href="../Users_Manual/getting_started/python.html"><strong aria-hidden="true">2.2.4.</strong> Python</a></li></ol></li><li class="chapter-item expanded "><a href="../Users_Manual/versioning.html"><strong aria-hidden="true">2.3.</strong> Versioning</a></li><li class="chapter-item expanded "><a href="../Users_Manual/geometry.html" class="active"><strong aria-hidden="true">2.4.</strong> Geometry</a></li><li class="chapter-item expanded "><a href="../Users_Manual/link.html"><strong aria-hidden="true">2.5.</strong> Link</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../Users_Manual/link/twincat.html"><strong aria-hidden="true">2.5.1.</strong> TwinCAT</a></li><li class="chapter-item expanded "><a href="../Users_Manual/link/soem.html"><strong aria-hidden="true">2.5.2.</strong> SOEM</a></li><li class="chapter-item expanded "><a href="../Users_Manual/link/simulator.html"><strong aria-hidden="true">2.5.3.</strong> Simulator</a></li></ol></li><li class="chapter-item expanded "><a href="../Users_Manual/gain.html"><strong aria-hidden="true">2.6.</strong> Gain</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../Users_Manual/gain/null.html"><strong aria-hidden="true">2.6.1.</strong> Null</a></li><li class="chapter-item expanded "><a href="../Users_Manual/gain/focus.html"><strong aria-hidden="true">2.6.2.</strong> Focus</a></li><li class="chapter-item expanded "><a href="../Users_Manual/gain/bessel.html"><strong aria-hidden="true">2.6.3.</strong> Bessel</a></li><li class="chapter-item expanded "><a href="../Users_Manual/gain/plane.html"><strong aria-hidden="true">2.6.4.</strong> Plane</a></li><li class="chapter-item expanded "><a href="../Users_Manual/gain/uniform.html"><strong aria-hidden="true">2.6.5.</strong> Uniform</a></li><li class="chapter-item expanded "><a href="../Users_Manual/gain/grouped.html"><strong aria-hidden="true">2.6.6.</strong> Group</a></li><li class="chapter-item expanded "><a href="../Users_Manual/gain/holo.html"><strong aria-hidden="true">2.6.7.</strong> Holo</a></li><li class="chapter-item expanded "><a href="../Users_Manual/gain/cache.html"><strong aria-hidden="true">2.6.8.</strong> Cache</a></li><li class="chapter-item expanded "><a href="../Users_Manual/gain/transform.html"><strong aria-hidden="true">2.6.9.</strong> Transform</a></li></ol></li><li class="chapter-item expanded "><a href="../Users_Manual/modulation.html"><strong aria-hidden="true">2.7.</strong> Modulation</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../Users_Manual/modulation/static.html"><strong aria-hidden="true">2.7.1.</strong> Static</a></li><li class="chapter-item expanded "><a href="../Users_Manual/modulation/sine.html"><strong aria-hidden="true">2.7.2.</strong> Sine</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../Users_Manual/modulation/fourier.html"><strong aria-hidden="true">2.7.2.1.</strong> Fourier</a></li></ol></li><li class="chapter-item expanded "><a href="../Users_Manual/modulation/square.html"><strong aria-hidden="true">2.7.3.</strong> Square</a></li><li class="chapter-item expanded "><a href="../Users_Manual/modulation/wav.html"><strong aria-hidden="true">2.7.4.</strong> Wav</a></li><li class="chapter-item expanded "><a href="../Users_Manual/modulation/rawpcm.html"><strong aria-hidden="true">2.7.5.</strong> RawPCM</a></li><li class="chapter-item expanded "><a href="../Users_Manual/modulation/cache.html"><strong aria-hidden="true">2.7.6.</strong> Cache</a></li><li class="chapter-item expanded "><a href="../Users_Manual/modulation/radiation.html"><strong aria-hidden="true">2.7.7.</strong> Radiation</a></li><li class="chapter-item expanded "><a href="../Users_Manual/modulation/transform.html"><strong aria-hidden="true">2.7.8.</strong> Transform</a></li></ol></li><li class="chapter-item expanded "><a href="../Users_Manual/stm.html"><strong aria-hidden="true">2.8.</strong> Spatio-Temporal Modulation</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../Users_Manual/stm/focus.html"><strong aria-hidden="true">2.8.1.</strong> FocusSTM</a></li><li class="chapter-item expanded "><a href="../Users_Manual/stm/gain.html"><strong aria-hidden="true">2.8.2.</strong> GainSTM</a></li></ol></li><li class="chapter-item expanded "><a href="../Users_Manual/silencer.html"><strong aria-hidden="true">2.9.</strong> Silencer</a></li><li class="chapter-item expanded "><a href="../Users_Manual/controller.html"><strong aria-hidden="true">2.10.</strong> Controller</a></li><li class="chapter-item expanded "><a href="../Users_Manual/advanced_examples/advanced_examples.html"><strong aria-hidden="true">2.11.</strong> Advanced examples</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../Users_Manual/advanced_examples/custom_gain.html"><strong aria-hidden="true">2.11.1.</strong> Custom Gain</a></li><li class="chapter-item expanded "><a href="../Users_Manual/advanced_examples/custom_modulation.html"><strong aria-hidden="true">2.11.2.</strong> Custom Modulation</a></li></ol></li><li class="chapter-item expanded "><a href="../Users_Manual/Simulator/simulator.html"><strong aria-hidden="true">2.12.</strong> Simulaotr</a></li><li class="chapter-item expanded "><a href="../Users_Manual/FAQ/faq.html"><strong aria-hidden="true">2.13.</strong> FAQ</a></li><li class="chapter-item expanded "><a href="../Users_Manual/Citation/citation.html"><strong aria-hidden="true">2.14.</strong> Citation</a></li><li class="chapter-item expanded "><a href="../Users_Manual/LICENSE.html"><strong aria-hidden="true">2.15.</strong> License</a></li><li class="chapter-item expanded "><a href="../Users_Manual/release_notes.html"><strong aria-hidden="true">2.16.</strong> Release notes</a></li></ol></li><li class="chapter-item expanded "><a href="../document_history.html"><strong aria-hidden="true">3.</strong> Document history</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">AUTD3 Developers Manual v18.0.1</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/shinolab/autd3" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<h1 id="geometry"><a class="header" href="#geometry">Geometry</a></h1>
+<p>In this chapter, we explain about <code>Geometry</code>.
+<code>Geometry</code> manages how AUTD3 devices are placed in the real world.</p>
+<ul>
+<li><a href="#connect-multiple-devices">Connect multiple devices</a></li>
+<li><a href="#devicetransducer-index">Device/Transducer index</a></li>
+<li><a href="#geometry-api">Geometry API</a>
+<ul>
+<li><a href="#device-access">Device access</a></li>
+</ul>
+</li>
+<li><a href="#device-api">Device API</a>
+<ul>
+<li><a href="#transducer-access">Transducer access</a></li>
+</ul>
+</li>
+<li><a href="#transducer-api">Transducer API</a></li>
+</ul>
+<h2 id="connect-multiple-devices"><a class="header" href="#connect-multiple-devices">Connect multiple devices</a></h2>
+<p>AUTD3 devices can be connected to each other via the daisy chain.
+SDK is designed to be used transparently even if multiple devices are connected.</p>
+<p>To use multiple devices, connect the PC and the EtherCAT In of the first device with an Ethernet cable, and connect the EtherCAT Out of the <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6595em;"></span><span class="mord mathnormal">i</span></span></span></span>-th device and the EtherCAT In of the <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7429em;vertical-align:-0.0833em;"></span><span class="mord mathnormal">i</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1</span></span></span></span>-th device with an Ethernet cable (See <a href="concept.html">Concept</a>).</p>
+<p>In SDK, you must call <code>add_device</code> function <strong>in the order of the connected devices</strong> when using multiple devices.</p>
+<figure>
+  <img src="../fig/Users_Manual/hor_left_ori_left_1.png"/>
+</figure>
+<p>For example, suppose you have two devices as shown in the figure above.
+The left device is the first device, and the right device is the second device.
+Then, the code is as follows.</p>
+<pre><code class="language-rust edition2021"><span class="boring">extern crate autd3;
+</span><span class="boring">extern crate tokio;
+</span><span class="boring">use autd3::prelude::*;
+</span><span class="boring">
+</span><span class="boring">#[tokio::main]
+</span><span class="boring">async fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
+</span><span class="boring">let autd = 
+</span>Controller::builder()
+    .add_device(AUTD3::new(Vector3::zeros()))
+    .add_device(AUTD3::new(Vector3::new(AUTD3::DEVICE_WIDTH, 0., 0.)))
+<span class="boring">   .open_with(autd3::link::Nop::builder()).await?;
+</span><span class="boring">Ok(())
+</span><span class="boring">}</span></code></pre>
+<pre><code class="language-cpp">#include &quot;autd3.hpp&quot;
+
+autd3::ControllerBuilder()
+    .add_device(autd3::AUTD3(autd3::Vector3::Zero()))
+    .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, 0, 0)))
+</code></pre>
+<pre><code class="language-cs">new ControllerBuilder()
+   .AddDevice(new AUTD3(Vector3d.zero))
+   .AddDevice(new AUTD3(new Vector3d(AUTD3.DeviceWidth, 0, 0)))
+</code></pre>
+<pre><code class="language-python">from pyautd3 import AUTD3, Controller
+
+Controller.builder()\
+    .add_device(AUTD3([0.0, 0.0, 0.0]))\
+    .add_device(AUTD3([AUTD3.device_width(), 0.0, 0.0]))
+</code></pre>
+<p>Here, the first argument of the <code>AUTD3</code> constructor is the position, and the second argument is the rotation.
+The rotation is specified by ZYZ Euler angles or quaternions.
+Also, <code>AUTD3::DEVICE_WIDTH</code> is the width of the device (including the outline of the board).
+In this example, no rotation is performed, so the second argument can be zero.</p>
+<figure>
+  <img src="../fig/Users_Manual/hor_right_ori_left_1.png"/>
+</figure>
+<p>And, for example, suppose you have two devices as shown in the figure above, where the global origin is set to the left device.
+Then, the code is as follows.</p>
+<pre><code class="language-rust edition2021"><span class="boring">extern crate autd3;
+</span><span class="boring">extern crate tokio;
+</span><span class="boring">use autd3::prelude::*;
+</span><span class="boring">
+</span><span class="boring">#[tokio::main]
+</span><span class="boring">async fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
+</span><span class="boring">let autd = 
+</span>Controller::builder()
+    .add_device(AUTD3::new(Vector3::new(-AUTD3::DEVICE_WIDTH, 0., 0.)))
+    .add_device(AUTD3::new(Vector3::zeros()))
+<span class="boring">   .open_with(autd3::link::Nop::builder()).await?;
+</span><span class="boring">Ok(())
+</span><span class="boring">}</span></code></pre>
+<pre><code class="language-cpp">#include &quot;autd3.hpp&quot;
+
+autd3::ControllerBuilder()
+    .add_device(autd3::AUTD3(autd3::Vector3(-autd3::AUTD3::DEVICE_WIDTH, 0, 0)))
+    .add_device(autd3::AUTD3(autd3::Vector3::Zero()))
+</code></pre>
+<pre><code class="language-cs">new ControllerBuilder()
+   .AddDevice(new AUTD3(new Vector3d(-AUTD3.DeviceWidth, 0, 0)))
+   .AddDevice(new AUTD3(Vector3d.zero))
+</code></pre>
+<pre><code class="language-python">from pyautd3 import AUTD3, Controller
+
+Controller.builder()\
+    .add_device(AUTD3([-AUTD3.device_width(), 0.0, 0.0]))\
+    .add_device(AUTD3([0.0, 0.0, 0.0]))
+</code></pre>
+<figure>
+  <img src="../fig/Users_Manual/vert.png"/>
+</figure>
+<p>Furthermore, for example, suppose you have two devices as shown in the figure above, where the global origin is set to the lower device.
+Then, the code is as follows.</p>
+<pre><code class="language-rust edition2021"><span class="boring">extern crate autd3;
+</span><span class="boring">extern crate tokio;
+</span><span class="boring">use autd3::prelude::*;
+</span><span class="boring">
+</span><span class="boring">#[tokio::main]
+</span><span class="boring">async fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
+</span>let autd = Controller::builder()
+    .add_device(AUTD3::new(Vector3::zeros()))
+    .add_device(
+        AUTD3::new(Vector3::new(0., 0., AUTD3::DEVICE_WIDTH))
+            .with_rotation(EulerAngle::ZYZ(0. * Rad, PI/2.0 * Rad, 0. * Rad)))
+<span class="boring">   .open_with(autd3::link::Nop::builder()).await?;
+</span><span class="boring">Ok(())
+</span><span class="boring">}</span></code></pre>
+<pre><code class="language-cpp">#include &quot;autd3.hpp&quot;
+
+autd3::ControllerBuilder()
+    .add_device(autd3::AUTD3(autd3::Vector3::Zero()))
+    .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, 0, 0))
+                    .with_rotation(autd3::EulerAngles::from_zyz(
+                        0 * rad, autd3::pi / 2 * rad, 0 * rad)))
+</code></pre>
+<pre><code class="language-cs">using static AUTD3Sharp.Angle.Units;
+
+new ControllerBuilder()
+   .AddDevice(new AUTD3(Vector3d.zero))
+   .AddDevice(
+      new AUTD3(new Vector3d(AUTD3.DeviceWidth, 0, 0))
+         .WithRotation(EulerAngles.FromZYZ(0 * Rad, AUTD3.Pi / 2 * Rad, 0 * Rad)))
+</code></pre>
+<pre><code class="language-python">import numpy as np
+from pyautd3 import AUTD3, Controller
+from pyautd3.geometry import EulerAngles, rad
+
+Controller.builder()\
+    .add_device(AUTD3([0.0, 0.0, 0.0]))\
+    .add_device(
+        AUTD3([AUTD3.device_width(), 0.0, 0.0]).with_rotation(
+            EulerAngles.from_zyz(0 * rad, np.pi / 2 * rad, 0 * rad)))
+</code></pre>
+<figure>
+  <img src="../fig/Users_Manual/hor_right_ori_right_1.png"/>
+</figure>
+<h2 id="devicetransducer-index"><a class="header" href="#devicetransducer-index">Device/Transducer index</a></h2>
+<p>Devices are assigned indices starting from 0 in the order in which they are connected to the PC.</p>
+<p>Also, each device has 249 transducers, and local indices are assigned (<a href="./concept.html">see the concept</a> for the surface photo of AUTD).</p>
+<h2 id="geometry-api"><a class="header" href="#geometry-api">Geometry API</a></h2>
+<ul>
+<li><code>num_devices</code>: Get the number of devices</li>
+<li><code>num_transducers</code>: Get the number of all transducers</li>
+<li><code>center</code>: Get the center of all transducers</li>
+</ul>
+<pre><code class="language-rust edition2021"><span class="boring">extern crate autd3;
+</span><span class="boring">extern crate tokio;
+</span><span class="boring">use autd3::prelude::*;
+</span><span class="boring">
+</span><span class="boring">#[tokio::main]
+</span><span class="boring">async fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
+</span><span class="boring">let mut autd = Controller::builder()
+</span><span class="boring">    .add_device(AUTD3::new(Vector3::zeros()))
+</span><span class="boring">   .open_with(autd3::link::Nop::builder()).await?;
+</span>let num_dev = autd.geometry.num_devices();
+let num_tr = autd.geometry.num_transducers();
+let center = autd.geometry.center();
+<span class="boring">Ok(())
+</span><span class="boring">}</span></code></pre>
+<pre><code class="language-cpp">const auto num_dev = autd.geometry().num_devices();
+const auto num_tr = autd.geometry().num_transducers();
+const autd3::Vector3 center = autd.geometry().center();
+</code></pre>
+<pre><code class="language-cs">var numDevices = autd.Geometry.NumDevices;
+var numTransducers = autd.Geometry.NumTransducers;
+var center = autd.Geometry.Center;
+</code></pre>
+<pre><code class="language-python">num_devices = autd.geometry.num_devices
+num_transducers = autd.geometry.num_transducers
+center = autd.geometry.center
+</code></pre>
+<h3 id="device-access"><a class="header" href="#device-access">Device access</a></h3>
+<p><code>Geometry</code> is a container of <code>Device</code>.</p>
+<p>To access <code>Device</code>, use indexer.
+Or, you can use an iterator.</p>
+<pre><code class="language-rust edition2021"><span class="boring">extern crate autd3;
+</span><span class="boring">extern crate tokio;
+</span><span class="boring">use autd3::prelude::*;
+</span><span class="boring">
+</span><span class="boring">#[tokio::main]
+</span><span class="boring">async fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
+</span><span class="boring">let mut autd = Controller::builder()
+</span><span class="boring">    .add_device(AUTD3::new(Vector3::zeros()))
+</span><span class="boring">   .open_with(autd3::link::Nop::builder()).await?;
+</span>let dev = &amp;autd.geometry[0];
+for dev in &amp;autd.geometry {
+    // do something
+}
+<span class="boring">Ok(())
+</span><span class="boring">}</span></code></pre>
+<pre><code class="language-cpp">auto dev = autd.geometry()[0];
+for (auto&amp; dev : autd.geometry()) {
+  // do something
+}
+</code></pre>
+<pre><code class="language-cs">var dev = autd.Geometry[0];
+foreach (var dev in autd.Geometry)
+{
+  // do something
+}
+</code></pre>
+<pre><code class="language-python">dev = autd.geometry[0]
+for dev in autd.geometry:
+    pass
+</code></pre>
+<h2 id="device-api"><a class="header" href="#device-api">Device API</a></h2>
+<ul>
+<li><code>idx</code>: Index of the device</li>
+<li><code>enable</code>: Enable flag. If it is off, the data of the device will not be updated.
+<ul>
+<li>Note that this only controls whether the data is updated or not, and does not stop the output.</li>
+</ul>
+</li>
+<li><code>sound_speed</code>: Get/set the speed of sound. The unit is mm/s.</li>
+<li><code>set_sound_speed_from_temp</code>: Set the sound speed from the temperature. The unit of the temperature is Celsius. The default sound speed is <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">340</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1.0641em;vertical-align:-0.25em;"></span><span class="mord">1</span><span class="mord"><span class="mord">0</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">3</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathrm">mm/s</span></span></span></span></span>, which corresponds to the sound speed of air at about 15 degrees Celsius. Note that there is a function with the same name in <code>Geometry</code>, and you can set the sound speed from the temperature for all devices by using it.</li>
+<li><code>attenuation</code>: Get/set the attenuation coefficient. The unit is Np/mm.</li>
+<li><code>translate</code>: Apply translation</li>
+<li><code>rotate</code>: Apply rotation</li>
+<li><code>affine</code>: Apply affine transformation (translation/rotation)</li>
+<li><code>force_fan</code>: flag to force the fan to start in Auto mode.
+<ul>
+<li>AUTD3 device has a fan, and it has three fan modes: Auto, Off, and On. In Auto mode, the temperature monitoring IC monitors the temperature of the IC, and when it exceeds a certain temperature, the fan starts automatically. In Off mode, the fan is always off, and in On mode, the fan is always on. The fan mode is switched by the jumper switch next to the fan. As shown in the figure below, the fan side is shorted to switch to Auto, the center is Off, and the right is On.<figure>
+  <img src="../fig/Users_Manual/fan.jpg"/>
+<figcaption>Jumper switch to specify fan mode</figcaption>
+</figure>
+</li>
+<li><code>force_fan</code> flag is a flag to force the fan to start in Auto mode.</li>
+<li>The flag is actually updated when some data is sent. If you want to update only the flag, send <code>UpdateFlags</code>.</li>
+</ul>
+</li>
+<li><code>reads_fpga_info</code>: flag to read the FPGA status. See <a href="./controller.html#fpga_info">Controller/fpga_info</a> for details.</li>
+</ul>
+<pre><code class="language-rust edition2021"><span class="boring">extern crate autd3;
+</span><span class="boring">extern crate tokio;
+</span><span class="boring">use autd3::prelude::*;
+</span><span class="boring">
+</span><span class="boring">#[tokio::main]
+</span><span class="boring">async fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
+</span><span class="boring">let mut autd = Controller::builder()
+</span><span class="boring">    .add_device(AUTD3::new(Vector3::zeros()))
+</span><span class="boring">   .open_with(autd3::link::Nop::builder()).await?;
+</span>let mut dev = &amp;mut autd.geometry[0];
+let idx = dev.idx();
+dev.enable = false;
+dev.sound_speed = 340e3;
+dev.set_sound_speed_from_temp(15.);
+dev.attenuation = 0.;
+let t = Vector3::new(1., 0., 0.);
+let r = UnitQuaternion::from_quaternion(Quaternion::new(1., 0., 0., 0.));
+dev.translate(t);
+dev.rotate(r);
+dev.affine(t, r);
+dev.force_fan = true;
+dev.reads_fpga_info = true;
+<span class="boring">Ok(())
+</span><span class="boring">}</span></code></pre>
+<pre><code class="language-cpp">auto dev = autd.geometry()[0];
+const auto idx = dev.idx();
+const auto enable = dev.enable();
+dev.set_enable(false);
+const auto sound_speed = dev.sound_speed();
+dev.set_sound_speed(340e3);
+dev.set_sound_speed_from_temp(15.);
+const auto attenuation = dev.attenuation();
+dev.set_attenuation(0);
+const auto t = autd3::Vector3(1., 0., 0.);
+const auto r = autd3::Quaternion(1., 0., 0., 0.);
+dev.translate(t);
+dev.rotate(r);
+dev.affine(t, r);
+dev.force_fan(true);
+dev.reads_fpga_info(true);
+</code></pre>
+<pre><code class="language-cs">var dev = autd.Geometry[0];
+var idx = dev.Idx;
+dev.Enable = false;
+dev.SoundSpeed = 340e3;
+dev.SetSoundSpeedFromTemp(15);
+dev.Attenuation = 0;
+var t = new Vector3d(1, 0, 0);
+var r = new Quaterniond(0, 0, 0, 1);
+dev.Translate(t);
+dev.Rotate(r);
+dev.Affine(t, r);
+dev.ForceFan = true;
+dev.ReadsFPGAInfo = true;
+</code></pre>
+<pre><code class="language-python">dev = autd.geometry[0]
+idx = dev.idx
+dev.enable = False
+dev.sound_speed = 340e3
+dev.set_sound_speed_from_temp(15.0)
+attenuation = dev.attenuation = 0
+t = np.array([1.0, 0.0, 0.0])
+r = np.array([1.0, 0.0, 0.0, 0.0])
+dev.translate(t)
+dev.rotate(r)
+dev.affine(t, r)
+dev.force_fan = True
+dev.reads_fpga_info = True
+</code></pre>
+<h3 id="transducer-access"><a class="header" href="#transducer-access">Transducer access</a></h3>
+<p><code>Device</code> is a container of <code>Transducer</code>, and <code>Transducer</code> contains information of each transducer.</p>
+<p>To access <code>Transducer</code>, use the indexer.
+Or, you can use an iterator.</p>
+<pre><code class="language-rust edition2021"><span class="boring">extern crate autd3;
+</span><span class="boring">extern crate tokio;
+</span><span class="boring">use autd3::prelude::*;
+</span><span class="boring">
+</span><span class="boring">#[tokio::main]
+</span><span class="boring">async fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
+</span><span class="boring">let mut autd = Controller::builder()
+</span><span class="boring">    .add_device(AUTD3::new(Vector3::zeros()))
+</span><span class="boring">   .open_with(autd3::link::Nop::builder()).await?;
+</span>let tr = &amp;autd.geometry[0][0];
+for tr in &amp;autd.geometry[0] {
+    // do something
+}
+<span class="boring">Ok(())
+</span><span class="boring">}</span></code></pre>
+<pre><code class="language-cpp">auto tr = autd.geometry()[0][0];
+for (auto&amp; tr : autd.geometry()[0]) {
+  // do something
+}
+</code></pre>
+<pre><code class="language-cs">var tr = autd.Geometry[0][0];
+foreach (var tr in autd.Geometry[0])
+{
+  // do something
+}
+</code></pre>
+<pre><code class="language-python">tr = autd.geometry[0][0]
+for tr in autd.geometry[0]:
+    pass
+</code></pre>
+<h2 id="transducer-api"><a class="header" href="#transducer-api">Transducer API</a></h2>
+<p>Following methods are available for <code>Transducer</code>.</p>
+<ul>
+<li><code>idx</code>: Get the local index of the transducer.</li>
+<li><code>position</code>: Get the position of the transducer.</li>
+<li><code>rotation</code>: Get the rotation of the transducer. The rotation is represented by a quaternion.</li>
+<li><code>x_direction</code>: Get the x direction vector of the transducer.</li>
+<li><code>y_direction</code>: Get the y direction vector of the transducer.</li>
+<li><code>z_direction</code>: Get the z direction vector of the transducer.</li>
+<li><code>wavelength</code>: Get the wavelength of the transducer. You need to pass the sound speed as an argument.</li>
+<li><code>wavenumber</code>: Get the wavenumber of the transducer. You need to pass the sound speed as an argument.</li>
+</ul>
+<pre><code class="language-rust edition2021"><span class="boring">extern crate autd3;
+</span><span class="boring">extern crate tokio;
+</span><span class="boring">use autd3::prelude::*;
+</span><span class="boring">
+</span><span class="boring">#[tokio::main]
+</span><span class="boring">async fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
+</span><span class="boring">let mut autd = Controller::builder()
+</span><span class="boring">    .add_device(AUTD3::new(Vector3::zeros()))
+</span><span class="boring">   .open_with(autd3::link::Nop::builder()).await?;
+</span>let tr = &amp;autd.geometry[0][0];
+let idx = tr.idx();
+let position = tr.position();
+let rotation = tr.rotation();
+let x_dir = tr.x_direction();
+let y_dir = tr.y_direction();
+let z_dir = tr.z_direction();
+
+let sound_speed = autd.geometry[0].sound_speed;
+let wavelen = tr.wavelength(sound_speed);
+let wavenum = tr.wavenumber(sound_speed);
+<span class="boring">Ok(())
+</span><span class="boring">}</span></code></pre>
+<pre><code class="language-cpp">const auto tr = autd.geometry()[0][0];
+const auto idx = tr.idx();
+const autd3::Vector3 position = tr.position();
+const auto rotation = tr.rotation();
+const auto x_dir = tr.x_direction();
+const auto y_dir = tr.y_direction();
+const auto z_dir = tr.z_direction();
+
+const auto sound_speed = autd.geometry()[0].sound_speed();
+const auto wavelen = tr.wavelength(sound_speed);
+const auto wavenum = tr.wavenumber(sound_speed);
+</code></pre>
+<pre><code class="language-cs">var tr = autd.Geometry[0][0];
+var trIdx = tr.Idx;
+var position = tr.Position;
+var rotation = tr.Rotation;
+var xDir = tr.XDirection;
+var yDir = tr.YDirection;
+var zDir = tr.ZDirection;
+
+var soundSpeed = autd.Geometry[0].SoundSpeed;
+var wavelen = tr.Wavelength(soundSpeed);
+var wavenum = tr.Wavenumber(soundSpeed);
+</code></pre>
+<pre><code class="language-python">tr = autd.geometry[0][0]
+idx = tr.idx
+position = tr.position
+rotation = tr.rotation
+x_dir = tr.x_direction
+y_dir = tr.y_direction
+z_dir = tr.z_direction
+
+sound_speed = autd.geometry[0].sound_speed
+wavelen = tr.wavelength(sound_speed)
+wavenum = tr.wavenumber(sound_speed)
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../Users_Manual/versioning.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../Users_Manual/link.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../Users_Manual/versioning.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../Users_Manual/link.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src=".././theme/codeblock_filename.js"></script>
+
+
+    </div>
+    </body>
+</html>
