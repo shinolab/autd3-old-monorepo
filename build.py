@@ -521,6 +521,39 @@ def cpp_test(args):
             ).check_returncode()
 
 
+def cpp_cov(args):
+    args.no_examples = True
+    cpp_build(args)
+
+    config = Config(args)
+    with working_dir("cpp/tests"):
+        os.makedirs("build", exist_ok=True)
+        with working_dir("build"):
+            command = ["cmake", "..", "-DCOVERAGE=ON"]
+            if config.cmake_extra is not None:
+                for cmd in config.cmake_extra:
+                    command.append(cmd)
+            subprocess.run(command).check_returncode()
+            command = ["cmake", "--build", ".", "--parallel", "8"]
+            if config.release:
+                command.append("--config")
+                command.append("Release")
+            subprocess.run(command).check_returncode()
+
+            target_dir = "."
+            if config.is_windows():
+                target_dir = "Release" if config.release else "Debug"
+            subprocess.run(
+                [f"{target_dir}/test_autd3{config.exe_ext()}"]
+            ).check_returncode()
+
+            with working_dir("CMakeFiles/test_autd3.dir"):
+                command = ["lcov", "-d", "." , "-c" , "-o", "coverage.raw.info"]
+                subprocess.run(command).check_returncode()
+                command = ["lcov", "-r", "coverage.raw.info", "*/googletest/*", "test/*", "*/c++/*", "-o", "coverage.info"]
+                subprocess.run(command).check_returncode()
+                
+
 def cpp_run(args):
     args.no_examples = False
     cpp_build(args)
@@ -1640,6 +1673,14 @@ if __name__ == "__main__":
         )
         parser_cpp_test.add_argument("--cmake-extra", help="cmake extra args")
         parser_cpp_test.set_defaults(handler=cpp_test)
+
+        # cpp cov
+        parser_cpp_cov = subparsers_cpp.add_parser("cov", help="see `cpp cov -h`")
+        parser_cpp_cov.add_argument(
+            "--release", action="store_true", help="release build"
+        )
+        parser_cpp_cov.add_argument("--cmake-extra", help="cmake extra args")
+        parser_cpp_cov.set_defaults(handler=cpp_cov)
 
         # cpp run
         parser_cpp_run = subparsers_cpp.add_parser("run", help="see `cpp run -h`")
