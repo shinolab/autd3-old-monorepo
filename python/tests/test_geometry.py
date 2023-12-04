@@ -14,6 +14,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 import numpy as np
 import pytest
+from numpy.typing import ArrayLike
 
 from pyautd3 import AUTD3, Controller, UpdateFlags
 from pyautd3.geometry import EulerAngles, deg, rad
@@ -29,7 +30,7 @@ def test_angle():
 
 @pytest.mark.asyncio()
 async def test_with_rotation():
-    async def open_with_rotation(q: np.ndarray):  # noqa: ANN202
+    async def open_with_rotation(q: ArrayLike) -> Controller[Audit]:
         return await Controller[Audit].builder().add_device(AUTD3([0.0, 0.0, 0.0]).with_rotation(q)).open_with_async(Audit.builder())
 
     autd = await open_with_rotation(EulerAngles.from_zyz(90 * deg, 0 * deg, 0 * deg))

@@ -13,6 +13,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 
 import numpy as np
+from numpy.typing import ArrayLike
 
 from pyautd3.emit_intensity import EmitIntensity
 from pyautd3.geometry import Geometry
@@ -27,7 +28,7 @@ class Plane(IGain):
     _d: np.ndarray
     _intensity: EmitIntensity | None
 
-    def __init__(self: "Plane", direction: np.ndarray) -> None:
+    def __init__(self: "Plane", direction: ArrayLike) -> None:
         """Constructor.
 
         Arguments:
@@ -35,7 +36,7 @@ class Plane(IGain):
             direction: Direction of the plane wave
         """
         super().__init__()
-        self._d = direction
+        self._d = np.array(direction)
         self._intensity = None
 
     def with_intensity(self: "Plane", intensity: int | EmitIntensity) -> "Plane":

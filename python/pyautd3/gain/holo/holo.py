@@ -17,6 +17,7 @@ from collections.abc import Iterable
 from typing import TypeVar
 
 import numpy as np
+from numpy.typing import ArrayLike
 
 from pyautd3.gain.gain import IGain
 
@@ -42,7 +43,7 @@ class Holo(IGain):
         self._repeat = None
         self._constraint = None
 
-    def add_focus(self: H, focus: np.ndarray, amp: Amplitude) -> H:
+    def add_focus(self: H, focus: ArrayLike, amp: Amplitude) -> H:
         """Add focus.
 
         Arguments:
@@ -50,6 +51,7 @@ class Holo(IGain):
             focus: Focus point
             amp: Focus amplitude
         """
+        focus = np.array(focus)
         self._foci.append(focus[0])
         self._foci.append(focus[1])
         self._foci.append(focus[2])
