@@ -1,3 +1,7 @@
+# 18.0.1
+
+- Close [#232](https://github.com/shinolab/autd3/issues/232): Allow to set the time scale of Simulator's autoplay mode
+
 # 18.0.0
 
 - Update firmware to v4.0.1

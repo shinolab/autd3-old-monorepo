@@ -4,7 +4,7 @@
  * Created Date: 26/11/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/09/2023
+ * Last Modified: 04/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -74,6 +74,8 @@ pub struct ViewerSettings {
     pub light_pos_z: f32,
     #[serde(default = "default_light_power")]
     pub light_power: f32,
+    #[serde(default = "default_time_scale")]
+    pub time_scale: f32,
 }
 
 fn default_ambient() -> f32 {
@@ -98,6 +100,10 @@ fn default_light_pos_z() -> f32 {
 
 fn default_light_power() -> f32 {
     5.
+}
+
+fn default_time_scale() -> f32 {
+    1.
 }
 
 impl ViewerSettings {
@@ -175,6 +181,7 @@ impl Default for ViewerSettings {
             light_pos_y: -533.2867 * MILLIMETER,
             light_pos_z: 150.0 * MILLIMETER * ZPARITY,
             light_power: 5.,
+            time_scale: 1.0,
         }
     }
 }
