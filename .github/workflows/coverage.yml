@@ -179,7 +179,7 @@ jobs:
 
       - name: Generate code coverage for csharp
         run: |
-          python build.py cs cov --release
+          python build.py cs cov
 
       - name: Copy coverage to cs directory
         run: |
