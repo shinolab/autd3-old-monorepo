@@ -718,6 +718,20 @@ def cs_cov(args):
         ]
         subprocess.run(command).check_returncode()
 
+        if args.html:
+            cov_res = sorted(
+                glob.glob("./TestResults/*/coverage.cobertura.xml"),
+                key=os.path.getmtime,
+                reverse=True,
+            )[0]
+            command = [
+                "reportgenerator",
+                f"-reports:{cov_res}",
+                "-targetdir:html",
+                "-reporttypes:Html",
+            ]
+            subprocess.run(command).check_returncode()
+
 
 def cs_run(args):
     args.no_examples = False
@@ -1772,6 +1786,9 @@ if __name__ == "__main__":
         parser_cs_cov = subparsers_cs.add_parser("cov", help="see `cs cov -h`")
         parser_cs_cov.add_argument(
             "--release", action="store_true", help="release build"
+        )
+        parser_cs_cov.add_argument(
+            "--html", action="store_true", help="generate html report", default=False
         )
         parser_cs_cov.set_defaults(handler=cs_cov)
 
