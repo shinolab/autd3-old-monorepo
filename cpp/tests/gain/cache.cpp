@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/12/2023
+// Last Modified: 05/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,9 +21,15 @@
 TEST(Gain, Cache) {
   auto autd = create_controller();
 
-  ASSERT_TRUE(autd.send_async(autd3::gain::Uniform(0x80).with_phase(autd3::internal::Phase(0x90)).with_cache()).get());
+  const auto g = autd3::gain::Uniform(0x80).with_phase(autd3::internal::Phase(0x90)).with_cache();
 
+  g.init(autd.geometry());
+
+  ASSERT_TRUE(autd.send_async(g).get());
   for (auto& dev : autd.geometry()) {
+    ASSERT_TRUE(std::ranges::all_of(g.drives().at(dev.idx()), [](auto d) {
+      return d == autd3::internal::Drive{autd3::internal::Phase(0x90), 0x80};
+    }));
     auto [intensities, phases] = autd.link().intensities_and_phases(dev.idx(), 0);
     ASSERT_TRUE(std::ranges::all_of(intensities, [](auto d) { return d == 0x80; }));
     ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 0x90; }));
@@ -62,6 +68,9 @@ TEST(Gain, CacheCheckOnce) {
     size_t cnt = 0;
     ForCacheTest g(&cnt);
     auto gc = g.with_cache();
+    ASSERT_EQ(cnt, 0);
+    gc.init(autd.geometry());
+    ASSERT_EQ(cnt, 1);
     ASSERT_TRUE(autd.send_async(gc).get());
     ASSERT_EQ(cnt, 1);
     ASSERT_TRUE(autd.send_async(gc).get());
@@ -77,8 +86,8 @@ TEST(Gain, CacheCheckOnlyForEnabled) {
   auto g = ForCacheTest(&cnt).with_cache();
   ASSERT_TRUE(autd.send_async(g).get());
 
-  ASSERT_FALSE(g.drives()->contains(0));
-  ASSERT_TRUE(g.drives()->contains(1));
+  ASSERT_FALSE(g.drives().contains(0));
+  ASSERT_TRUE(g.drives().contains(1));
 
   {
     auto [intensities, phases] = autd.link().intensities_and_phases(0, 0);

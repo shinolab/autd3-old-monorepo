@@ -1,4 +1,5 @@
 target_sources(test_autd3 PRIVATE
+  backend.cpp
   constraint.cpp
   greedy.cpp
   gs.cpp

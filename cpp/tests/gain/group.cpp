@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/12/2023
+// Last Modified: 05/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -29,13 +29,30 @@ TEST(Gain, Group) {
                                   .set("uniform", autd3::gain::Uniform(0x80).with_phase(autd3::internal::Phase(0x90)))
                                   .set("null", autd3::gain::Null()))
                   .get());
-
   for (auto& dev : autd.geometry()) {
     auto [intensities, phases] = autd.link().intensities_and_phases(dev.idx(), 0);
     for (auto& tr : dev) {
       if (tr.position().x() < cx) {
         ASSERT_EQ(0x80, intensities[tr.idx()]);
         ASSERT_EQ(0x90, phases[tr.idx()]);
+      } else {
+        ASSERT_EQ(0, intensities[tr.idx()]);
+        ASSERT_EQ(0, phases[tr.idx()]);
+      }
+    }
+  }
+
+  ASSERT_TRUE(autd.send_async(autd3::gain::Group([cx](const auto&, const auto& tr) -> std::optional<const char*> {
+                                if (tr.position().x() < cx) return "uniform";
+                                return std::nullopt;
+                              }).set("uniform", autd3::gain::Uniform(0x81).with_phase(autd3::internal::Phase(0x91))))
+                  .get());
+  for (auto& dev : autd.geometry()) {
+    auto [intensities, phases] = autd.link().intensities_and_phases(dev.idx(), 0);
+    for (auto& tr : dev) {
+      if (tr.position().x() < cx) {
+        ASSERT_EQ(0x81, intensities[tr.idx()]);
+        ASSERT_EQ(0x91, phases[tr.idx()]);
       } else {
         ASSERT_EQ(0, intensities[tr.idx()]);
         ASSERT_EQ(0, phases[tr.idx()]);
