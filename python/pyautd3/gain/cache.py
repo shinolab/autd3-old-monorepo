@@ -38,7 +38,8 @@ class Cache(IGain, Generic[G]):
         self._g = g
         self._cache = {}
 
-    def _gain_ptr(self: "Cache", geometry: Geometry) -> GainPtr:
+    def init(self: "Cache", geometry: Geometry) -> None:
+        """Initialize gain."""
         device_indices = [dev.idx for dev in geometry.devices()]
 
         if len(self._cache) != len(device_indices) or any(idx not in self._cache for idx in device_indices):
@@ -49,6 +50,8 @@ class Cache(IGain, Generic[G]):
                 self._cache[dev.idx] = drives
             Base().gain_calc_free_result(res)
 
+    def _gain_ptr(self: "Cache", geometry: Geometry) -> GainPtr:
+        self.init(geometry)
         return reduce(
             lambda acc, dev: Base().gain_custom_set(
                 acc,
