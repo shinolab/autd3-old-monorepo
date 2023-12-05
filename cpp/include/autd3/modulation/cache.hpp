@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/12/2023
+// Last Modified: 05/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -33,10 +33,10 @@ class Cache final : public internal::Modulation {
         new internal::native_methods::CachePtr(cache), [](const internal::native_methods::CachePtr* ptr) { AUTDModulationCacheDelete(*ptr); });
   }
   Cache(const Cache& v) = default;
-  Cache& operator=(const Cache& obj) = default;
+  Cache& operator=(const Cache& obj) = delete;
   Cache(Cache&& obj) noexcept = default;
-  Cache& operator=(Cache&& obj) noexcept = default;
-  ~Cache() noexcept override = default;
+  Cache& operator=(Cache&& obj) noexcept = delete;
+  ~Cache() noexcept override = default;  // LCOV_EXCL_LINE
 
   [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override { return AUTDModulationCacheIntoModulation(*_cache); }
 
@@ -46,6 +46,7 @@ class Cache final : public internal::Modulation {
   [[nodiscard]] std::vector<internal::EmitIntensity>::const_iterator cend() const noexcept { return _buffer.cend(); }
   [[nodiscard]] std::vector<internal::EmitIntensity>::const_iterator begin() const noexcept { return _buffer.begin(); }
   [[nodiscard]] std::vector<internal::EmitIntensity>::const_iterator end() const noexcept { return _buffer.end(); }
+
   [[nodiscard]] const internal::EmitIntensity& operator[](const size_t i) const { return _buffer[i]; }
 
  private:

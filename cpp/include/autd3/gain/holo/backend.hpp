@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/11/2023
+// Last Modified: 05/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -27,7 +27,7 @@ class Backend {
   Backend& operator=(const Backend& obj) = default;
   Backend(Backend&& obj) = default;
   Backend& operator=(Backend&& obj) = default;
-  virtual ~Backend() = default;
+  virtual ~Backend() = default;  // LCOV_EXCL_LINE
 
   [[nodiscard]] internal::native_methods::BackendPtr ptr() const { return _ptr; }
 
