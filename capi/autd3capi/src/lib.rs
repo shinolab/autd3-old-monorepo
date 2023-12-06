@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/12/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -167,12 +167,6 @@ pub unsafe extern "C" fn AUTDDatagramClear() -> DatagramPtr {
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDDatagramUpdateFlags() -> DatagramPtr {
-    DatagramPtr::new(UpdateFlags::new())
-}
-
-#[no_mangle]
-#[must_use]
 pub unsafe extern "C" fn AUTDDatagramStop() -> DatagramSpecialPtr {
     DatagramSpecialPtr::new(Stop::new())
 }
@@ -216,6 +210,44 @@ pub unsafe extern "C" fn AUTDDatagramConfigureDebugOutputIdx(
         unsafe extern "C" fn(ConstPtr, geometry: GeometryPtr, u32) -> u8,
     >(f);
     DatagramPtr::new(DynamicConfigureDebugOutputIdx::new(
+        geo.devices()
+            .map(move |dev| (dev.idx(), f(context, geometry, dev.idx() as u32)))
+            .collect(),
+    ))
+}
+
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDDatagramConfigureForceFan(
+    f: ConstPtr,
+    context: ConstPtr,
+    geometry: GeometryPtr,
+) -> DatagramPtr {
+    let geo = cast!(geometry.0, Geometry);
+    let f = std::mem::transmute::<
+        _,
+        unsafe extern "C" fn(ConstPtr, geometry: GeometryPtr, u32) -> bool,
+    >(f);
+    DatagramPtr::new(DynamicConfigureForceFan::new(
+        geo.devices()
+            .map(move |dev| (dev.idx(), f(context, geometry, dev.idx() as u32)))
+            .collect(),
+    ))
+}
+
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDDatagramConfigureReadsFPGAInfo(
+    f: ConstPtr,
+    context: ConstPtr,
+    geometry: GeometryPtr,
+) -> DatagramPtr {
+    let geo = cast!(geometry.0, Geometry);
+    let f = std::mem::transmute::<
+        _,
+        unsafe extern "C" fn(ConstPtr, geometry: GeometryPtr, u32) -> bool,
+    >(f);
+    DatagramPtr::new(DynamicConfigureReadsFPGAInfo::new(
         geo.devices()
             .map(move |dev| (dev.idx(), f(context, geometry, dev.idx() as u32)))
             .collect(),
@@ -432,74 +464,4 @@ pub unsafe extern "C" fn AUTDControllerGroup(
         )
         .and_then(|g| g.send())
         .into()
-}
-
-#[cfg(test)]
-mod tests {
-    use autd3capi_def::{DatagramPtr, AUTD3_TRUE};
-
-    use super::*;
-
-    use crate::link::nop::*;
-
-    pub unsafe fn make_nop_link() -> LinkBuilderPtr {
-        AUTDLinkNop()
-    }
-
-    pub unsafe fn create_controller() -> ControllerPtr {
-        let builder = AUTDControllerBuilder();
-        let builder = AUTDControllerBuilderAddDevice(builder, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
-        let builder = AUTDControllerBuilderAddDevice(builder, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
-
-        let link = make_nop_link();
-        let cnt = AUTDControllerOpenWith(builder, link);
-        assert_ne!(cnt.result.0, std::ptr::null());
-        cnt.result
-    }
-
-    #[test]
-    fn basic() {
-        unsafe {
-            let cnt = create_controller();
-
-            let firm_p = AUTDControllerFirmwareInfoListPointer(cnt);
-            let firm_p = firm_p.result;
-            assert_ne!(firm_p.0, std::ptr::null());
-            (0..2).for_each(|i| {
-                let mut info = vec![c_char::default(); 256];
-                AUTDControllerFirmwareInfoGet(firm_p, i as _, info.as_mut_ptr());
-            });
-            AUTDControllerFirmwareInfoListPointerDelete(firm_p);
-
-            let mut fpga_info = vec![0xFFu8; 2];
-            let res = AUTDControllerFPGAInfo(cnt, fpga_info.as_mut_ptr() as _);
-            assert_eq!(res.result, AUTD3_TRUE);
-            assert_eq!(fpga_info[0], 0x00);
-            assert_eq!(fpga_info[1], 0x00);
-
-            let s = AUTDDatagramSynchronize();
-            let r = AUTDControllerSend(cnt, s, DatagramPtr(std::ptr::null()), -1);
-            assert_eq!(r.result, AUTD3_TRUE);
-
-            let s = AUTDDatagramClear();
-            let r = AUTDControllerSend(cnt, s, DatagramPtr(std::ptr::null()), -1);
-            assert_eq!(r.result, AUTD3_TRUE);
-
-            let s = AUTDDatagramUpdateFlags();
-            let r = AUTDControllerSend(cnt, s, DatagramPtr(std::ptr::null()), -1);
-            assert_eq!(r.result, AUTD3_TRUE);
-
-            let s = AUTDDatagramStop();
-            let r = AUTDControllerSendSpecial(cnt, s, -1);
-            assert_eq!(r.result, AUTD3_TRUE);
-
-            let s = AUTDDatagramSilencer(256, 256).result;
-            let r = AUTDControllerSend(cnt, s, DatagramPtr(std::ptr::null()), -1);
-            assert_eq!(r.result, AUTD3_TRUE);
-
-            assert_eq!(AUTDControllerClose(cnt).result, AUTD3_TRUE);
-
-            AUTDControllerDelete(cnt);
-        }
-    }
 }

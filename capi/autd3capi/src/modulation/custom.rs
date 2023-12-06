@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/12/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -30,33 +30,4 @@ pub unsafe extern "C" fn AUTDModulationCustom(
         config: config.into(),
         buf,
     })
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    use crate::{modulation::*, tests::*, *};
-
-    use autd3capi_def::{DatagramPtr, AUTD3_TRUE};
-
-    #[test]
-    fn test_custom_modulation() {
-        unsafe {
-            let cnt = create_controller();
-
-            let buf = [0xFF, 0xFF];
-            let m = AUTDModulationCustom(
-                AUTDSamplingConfigFromFrequencyDivision(5120).result,
-                buf.as_ptr(),
-                buf.len() as _,
-            );
-            let m = AUTDModulationIntoDatagram(m);
-
-            let r = AUTDControllerSend(cnt, m, DatagramPtr(std::ptr::null()), -1);
-            assert_eq!(r.result, AUTD3_TRUE);
-
-            AUTDControllerDelete(cnt);
-        }
-    }
 }

@@ -20,7 +20,9 @@ from pyautd3 import (
     AUTD3,
     Clear,
     ConfigureDebugOutputIdx,
+    ConfigureForceFan,
     ConfigureModDelay,
+    ConfigureReadsFPGAInfo,
     Controller,
     Device,
     FirmwareInfo,
@@ -28,7 +30,6 @@ from pyautd3 import (
     Silencer,
     Stop,
     Synchronize,
-    UpdateFlags,
 )
 from pyautd3.autd_error import AUTDError, InvalidDatagramTypeError, KeyAlreadyExistsError
 from pyautd3.gain import Null, Uniform
@@ -89,10 +90,7 @@ async def test_debug_output_idx():
 
 def test_fpga_info():
     with create_controller_sync() as autd:
-        for dev in autd.geometry:
-            dev.reads_fpga_info = True
-
-        autd.send(UpdateFlags())
+        autd.send(ConfigureReadsFPGAInfo(lambda _dev: True))
 
         infos = autd.fpga_info()
         for info in infos:
@@ -127,10 +125,7 @@ def test_fpga_info():
 @pytest.mark.asyncio()
 async def test_fpga_info_async():
     with await create_controller() as autd:
-        for dev in autd.geometry:
-            dev.reads_fpga_info = True
-
-        await autd.send_async(UpdateFlags())
+        autd.send(ConfigureReadsFPGAInfo(lambda _dev: True))
 
         infos = await autd.fpga_info_async()
         for info in infos:
@@ -164,11 +159,9 @@ async def test_fpga_info_async():
 
 def test_firmware_info():
     with create_controller_sync() as autd:
-        assert FirmwareInfo.latest_version() == "v4.0.1"
-
         for i, firm in enumerate(autd.firmware_info_list()):
-            assert firm.info == f"{i}: CPU = v4.0.1, FPGA = v4.0.1 [Emulator]"
-            assert str(firm) == f"{i}: CPU = v4.0.1, FPGA = v4.0.1 [Emulator]"
+            assert firm.info == f"{i}: CPU = v4.1.0, FPGA = v4.1.0 [Emulator]"
+            assert str(firm) == f"{i}: CPU = v4.1.0, FPGA = v4.1.0 [Emulator]"
 
         autd.link.break_down()
         with pytest.raises(AUTDError) as e:
@@ -179,11 +172,11 @@ def test_firmware_info():
 @pytest.mark.asyncio()
 async def test_firmware_info_async():
     with await create_controller() as autd:
-        assert FirmwareInfo.latest_version() == "v4.0.1"
+        assert FirmwareInfo.latest_version() == "v4.1.0"
 
         for i, firm in enumerate(await autd.firmware_info_list_async()):
-            assert firm.info == f"{i}: CPU = v4.0.1, FPGA = v4.0.1 [Emulator]"
-            assert str(firm) == f"{i}: CPU = v4.0.1, FPGA = v4.0.1 [Emulator]"
+            assert firm.info == f"{i}: CPU = v4.1.0, FPGA = v4.1.0 [Emulator]"
+            assert str(firm) == f"{i}: CPU = v4.1.0, FPGA = v4.1.0 [Emulator]"
 
         autd.link.break_down()
         with pytest.raises(AUTDError) as e:
@@ -231,15 +224,15 @@ async def test_send_async_timeout():
         .open_with_async(Audit.builder().with_timeout(timeout=timedelta(microseconds=0)))
     )
 
-    await autd.send_async(UpdateFlags())
+    await autd.send_async(Null())
 
     assert autd.link.last_timeout_ns() == 0
 
-    await autd.send_async(UpdateFlags(), timeout=timedelta(microseconds=1))
+    await autd.send_async(Null(), timeout=timedelta(microseconds=1))
 
     assert autd.link.last_timeout_ns() == 1000
 
-    await autd.send_async((UpdateFlags(), UpdateFlags()), timeout=timedelta(microseconds=2))
+    await autd.send_async((Null(), Null()), timeout=timedelta(microseconds=2))
 
     assert autd.link.last_timeout_ns() == 2000
 
@@ -254,15 +247,15 @@ async def test_send_async_timeout():
         .open_with_async(Audit.builder().with_timeout(timeout=timedelta(microseconds=10)))
     )
 
-    await autd.send_async(UpdateFlags())
+    await autd.send_async(Null())
 
     assert autd.link.last_timeout_ns() == 10 * 1000
 
-    await autd.send_async(UpdateFlags(), timeout=timedelta(microseconds=1))
+    await autd.send_async(Null(), timeout=timedelta(microseconds=1))
 
     assert autd.link.last_timeout_ns() == 1000
 
-    await autd.send_async((UpdateFlags(), UpdateFlags()), timeout=timedelta(microseconds=2))
+    await autd.send_async((Null(), Null()), timeout=timedelta(microseconds=2))
 
     assert autd.link.last_timeout_ns() == 2000
 
@@ -577,20 +570,6 @@ async def test_stop():
 
 
 @pytest.mark.asyncio()
-async def test_update_flags():
-    autd = await create_controller()
-
-    for dev in autd.geometry:
-        dev.force_fan = True
-        assert autd.link.fpga_flags(dev.idx) == 0
-
-    await autd.send_async(UpdateFlags())
-
-    for dev in autd.geometry:
-        assert autd.link.fpga_flags(dev.idx) == 1
-
-
-@pytest.mark.asyncio()
 async def test_synchronize():
     autd = await Controller.builder().add_device(AUTD3([0.0, 0.0, 0.0])).add_device(AUTD3([0.0, 0.0, 0.0])).open_with_async(Audit.builder())
 
@@ -608,3 +587,18 @@ async def test_configure_mod_delay():
 
     for dev in autd.geometry:
         assert np.all(autd.link.mod_delays(dev.idx) == 1)
+
+
+@pytest.mark.asyncio()
+async def test_configure_force_fan():
+    autd: Controller[Audit] = await create_controller()
+    for dev in autd.geometry:
+        assert not autd.link.is_force_fan(dev.idx)
+
+    await autd.send_async(ConfigureForceFan(lambda dev: dev.idx == 0))
+    assert autd.link.is_force_fan(0)
+    assert not autd.link.is_force_fan(1)
+
+    await autd.send_async(ConfigureForceFan(lambda dev: dev.idx == 1))
+    assert not autd.link.is_force_fan(0)
+    assert autd.link.is_force_fan(1)

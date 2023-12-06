@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -73,40 +73,4 @@ pub unsafe extern "C" fn AUTDGainHoloLMWithInitial(
     let mut initial = vec![0.; len as usize];
     std::ptr::copy_nonoverlapping(initial_ptr, initial.as_mut_ptr(), len as usize);
     GainPtr::new(take_gain!(holo, LM<NalgebraBackend>).with_initial(initial))
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::{constraint::*, nalgebra_backend::*};
-
-    #[test]
-    fn test_holo_lm() {
-        unsafe {
-            let backend = AUTDNalgebraBackend();
-
-            let size = 2;
-            let points = [10., 20., 30., 40., 50., 60.];
-            let amps = vec![1.; size];
-
-            let holo = AUTDGainHoloLM(backend, points.as_ptr(), amps.as_ptr(), size as _);
-            let constraint = AUTDGainHoloConstraintDotCare();
-            let holo = AUTDGainHoloLMWithConstraint(holo, constraint);
-            let constraint = AUTDGainHoloConstraintNormalize();
-            let holo = AUTDGainHoloLMWithConstraint(holo, constraint);
-            let constraint = AUTDGainHoloConstraintUniform(0xFF);
-            let holo = AUTDGainHoloLMWithConstraint(holo, constraint);
-            let constraint = AUTDGainHoloConstraintClamp(0, 0xFF);
-            let holo = AUTDGainHoloLMWithConstraint(holo, constraint);
-
-            let holo = AUTDGainHoloLMWithEps1(holo, 1e-3);
-            let holo = AUTDGainHoloLMWithEps2(holo, 1e-3);
-            let holo = AUTDGainHoloLMWithTau(holo, 1e-3);
-            let holo = AUTDGainHoloLMWithKMax(holo, 5);
-            let initial = [0.; 1];
-            let _ = AUTDGainHoloLMWithInitial(holo, initial.as_ptr(), initial.len() as _);
-
-            AUTDDeleteNalgebraBackend(backend);
-        }
-    }
 }

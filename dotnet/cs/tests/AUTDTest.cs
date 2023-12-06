@@ -84,10 +84,7 @@ public class AUTDTest
     {
         var autd = await CreateController();
 
-        foreach (var dev in autd.Geometry)
-            dev.ReadsFPGAInfo = true;
-
-        Assert.True(await autd.SendAsync(new UpdateFlags()));
+        Assert.True(await autd.SendAsync(new ConfigureReadsFPGAInfo(_ => true)));
 
         {
             var infos = await autd.FPGAInfoAsync();
@@ -132,10 +129,7 @@ public class AUTDTest
     {
         var autd = CreateControllerSync();
 
-        foreach (var dev in autd.Geometry)
-            dev.ReadsFPGAInfo = true;
-
-        Assert.True(autd.Send(new UpdateFlags()));
+        Assert.True(autd.Send(new ConfigureReadsFPGAInfo(_ => true)));
 
         {
             var infos = autd.FPGAInfo();
@@ -175,13 +169,13 @@ public class AUTDTest
     {
         var autd = await CreateController();
 
-        Assert.Equal("v4.0.1", FirmwareInfo.LatestVersion);
+        Assert.Equal("v4.1.0", FirmwareInfo.LatestVersion);
 
         {
             foreach (var (info, i) in (await autd.FirmwareInfoListAsync()).Select((info, i) => (info, i)))
             {
-                Assert.Equal(info.Info, $"{i}: CPU = v4.0.1, FPGA = v4.0.1 [Emulator]");
-                Assert.Equal($"{info}", $"{i}: CPU = v4.0.1, FPGA = v4.0.1 [Emulator]");
+                Assert.Equal(info.Info, $"{i}: CPU = v4.1.0, FPGA = v4.1.0 [Emulator]");
+                Assert.Equal($"{info}", $"{i}: CPU = v4.1.0, FPGA = v4.1.0 [Emulator]");
             }
         }
 
@@ -197,7 +191,7 @@ public class AUTDTest
         var autd = CreateControllerSync();
 
         foreach (var (info, i) in autd.FirmwareInfoList().Select((info, i) => (info, i)))
-            Assert.Equal(info.Info, $"{i}: CPU = v4.0.1, FPGA = v4.0.1 [Emulator]");
+            Assert.Equal(info.Info, $"{i}: CPU = v4.1.0, FPGA = v4.1.0 [Emulator]");
 
         autd.Link.BreakDown();
         Assert.Throws<AUTDException>(() => _ = autd.FirmwareInfoList().Last());
@@ -255,13 +249,13 @@ public class AUTDTest
             var autd = await new ControllerBuilder().AddDevice(new AUTD3(Vector3d.zero)).AddDevice(new AUTD3(Vector3d.zero))
                 .OpenWithAsync(Audit.Builder().WithTimeout(TimeSpan.FromMicroseconds(0)));
 
-            await autd.SendAsync(new UpdateFlags());
+            await autd.SendAsync(new Null());
             Assert.Equal(0ul, autd.Link.LastTimeoutNs());
 
-            await autd.SendAsync(new UpdateFlags(), TimeSpan.FromMicroseconds(1));
+            await autd.SendAsync(new Null(), TimeSpan.FromMicroseconds(1));
             Assert.Equal(1000ul, autd.Link.LastTimeoutNs());
 
-            await autd.SendAsync((new UpdateFlags(), new UpdateFlags()), TimeSpan.FromMicroseconds(2));
+            await autd.SendAsync((new Null(), new Null()), TimeSpan.FromMicroseconds(2));
             Assert.Equal(2000ul, autd.Link.LastTimeoutNs());
 
             await autd.SendAsync(new Stop(), TimeSpan.FromMicroseconds(3));
@@ -272,13 +266,13 @@ public class AUTDTest
             var autd = await new ControllerBuilder().AddDevice(new AUTD3(Vector3d.zero)).AddDevice(new AUTD3(Vector3d.zero))
                 .OpenWithAsync(Audit.Builder().WithTimeout(TimeSpan.FromMicroseconds(10)));
 
-            await autd.SendAsync(new UpdateFlags());
+            await autd.SendAsync(new Null());
             Assert.Equal(10000ul, autd.Link.LastTimeoutNs());
 
-            await autd.SendAsync(new UpdateFlags(), TimeSpan.FromMicroseconds(1));
+            await autd.SendAsync(new Null(), TimeSpan.FromMicroseconds(1));
             Assert.Equal(1000ul, autd.Link.LastTimeoutNs());
 
-            await autd.SendAsync((new UpdateFlags(), new UpdateFlags()), TimeSpan.FromMicroseconds(2));
+            await autd.SendAsync((new Null(), new Null()), TimeSpan.FromMicroseconds(2));
             Assert.Equal(2000ul, autd.Link.LastTimeoutNs());
 
             await autd.SendAsync(new Stop(), TimeSpan.FromMicroseconds(3));
@@ -293,13 +287,13 @@ public class AUTDTest
             var autd = new ControllerBuilder().AddDevice(new AUTD3(Vector3d.zero)).AddDevice(new AUTD3(Vector3d.zero))
                 .OpenWith(Audit.Builder().WithTimeout(TimeSpan.FromMicroseconds(0)));
 
-            autd.Send(new UpdateFlags());
+            autd.Send(new Null());
             Assert.Equal(0ul, autd.Link.LastTimeoutNs());
 
-            autd.Send(new UpdateFlags(), TimeSpan.FromMicroseconds(1));
+            autd.Send(new Null(), TimeSpan.FromMicroseconds(1));
             Assert.Equal(1000ul, autd.Link.LastTimeoutNs());
 
-            autd.Send((new UpdateFlags(), new UpdateFlags()), TimeSpan.FromMicroseconds(2));
+            autd.Send((new Null(), new Null()), TimeSpan.FromMicroseconds(2));
             Assert.Equal(2000ul, autd.Link.LastTimeoutNs());
 
             autd.Send(new Stop(), TimeSpan.FromMicroseconds(3));
@@ -310,13 +304,13 @@ public class AUTDTest
             var autd = new ControllerBuilder().AddDevice(new AUTD3(Vector3d.zero)).AddDevice(new AUTD3(Vector3d.zero))
                 .OpenWith(Audit.Builder().WithTimeout(TimeSpan.FromMicroseconds(10)));
 
-            autd.Send(new UpdateFlags());
+            autd.Send(new Null());
             Assert.Equal(10000ul, autd.Link.LastTimeoutNs());
 
-            autd.Send(new UpdateFlags(), TimeSpan.FromMicroseconds(1));
+            autd.Send(new Null(), TimeSpan.FromMicroseconds(1));
             Assert.Equal(1000ul, autd.Link.LastTimeoutNs());
 
-            autd.Send((new UpdateFlags(), new UpdateFlags()), TimeSpan.FromMicroseconds(2));
+            autd.Send((new Null(), new Null()), TimeSpan.FromMicroseconds(2));
             Assert.Equal(2000ul, autd.Link.LastTimeoutNs());
 
             autd.Send(new Stop(), TimeSpan.FromMicroseconds(3));
@@ -694,23 +688,6 @@ public class AUTDTest
     }
 
     [Fact]
-    public async Task TestUpdateFlags()
-    {
-        var autd = await CreateController();
-        foreach (var dev in autd.Geometry)
-        {
-            dev.ForceFan = true;
-            Assert.Equal(0, autd.Link.FpgaFlags(dev.Idx));
-        }
-
-        Assert.True(await autd.SendAsync(new UpdateFlags()));
-        foreach (var dev in autd.Geometry)
-        {
-            Assert.Equal(1, autd.Link.FpgaFlags(dev.Idx));
-        }
-    }
-
-    [Fact]
     public async Task TestSynchronize()
     {
         var autd = await new ControllerBuilder().AddDevice(new AUTD3(Vector3d.zero)).AddDevice(new AUTD3(Vector3d.zero))
@@ -734,5 +711,21 @@ public class AUTDTest
         {
             Assert.All(autd.Link.ModDelays(dev.Idx), d => Assert.Equal(1, d));
         }
+    }
+
+    [Fact]
+    public async Task TestConfigForceFan()
+    {
+        var autd = await AUTDTest.CreateController();
+        foreach (var dev in autd.Geometry)
+            Assert.False(autd.Link.IsForceFan(dev.Idx));
+
+        await autd.SendAsync(new ConfigureForceFan(dev => dev.Idx == 0));
+        Assert.True(autd.Link.IsForceFan(0));
+        Assert.False(autd.Link.IsForceFan(1));
+
+        await autd.SendAsync(new ConfigureForceFan(dev => dev.Idx == 1));
+        Assert.False(autd.Link.IsForceFan(0));
+        Assert.True(autd.Link.IsForceFan(1));
     }
 }

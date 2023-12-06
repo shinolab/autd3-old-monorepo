@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/12/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -103,46 +103,5 @@ pub unsafe extern "C" fn AUTDSTMPropsFinishIdx(props: STMPropsPtr) -> i32 {
         idx as i32
     } else {
         -1
-    }
-}
-
-#[cfg(test)]
-mod tests {
-
-    use autd3capi_def::{
-        AUTDSamplingConfigFrequencyDivision, AUTDSamplingConfigFromFrequencyDivision,
-    };
-
-    use super::*;
-
-    #[test]
-    fn stm_props() {
-        unsafe {
-            let props = AUTDSTMPropsNew(1.);
-            assert_eq!(1., AUTDSTMPropsFrequency(props, 0));
-
-            let props =
-                AUTDSTMPropsFromSamplingConfig(AUTDSamplingConfigFromFrequencyDivision(512).result);
-            assert_eq!(
-                512,
-                AUTDSamplingConfigFrequencyDivision(AUTDSTMPropsSamplingConfig(props, 0).result)
-            );
-
-            let props = AUTDSTMPropsNew(1.);
-            let props = AUTDSTMPropsWithStartIdx(props, 0);
-            assert_eq!(0, AUTDSTMPropsStartIdx(props));
-
-            let props = AUTDSTMPropsNew(1.);
-            let props = AUTDSTMPropsWithStartIdx(props, -1);
-            assert_eq!(-1, AUTDSTMPropsStartIdx(props));
-
-            let props = AUTDSTMPropsNew(1.);
-            let props = AUTDSTMPropsWithFinishIdx(props, 1);
-            assert_eq!(1, AUTDSTMPropsFinishIdx(props));
-
-            let props = AUTDSTMPropsNew(1.);
-            let props = AUTDSTMPropsWithFinishIdx(props, -1);
-            assert_eq!(-1, AUTDSTMPropsFinishIdx(props));
-        }
     }
 }

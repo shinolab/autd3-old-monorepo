@@ -14,10 +14,10 @@ Copyright (c) 2020 Shun Suzuki. All rights reserved.
 
 import asyncio
 
+from samples import runner  # type: ignore[import-not-found]
+
 from pyautd3 import AUTD3, Controller
 from pyautd3.link.twincat import TwinCAT
-
-from .samples import runner
 
 
 async def main() -> None:

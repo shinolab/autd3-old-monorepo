@@ -99,25 +99,6 @@ namespace AUTD3Sharp
             }
         }
 
-
-        /// <summary>
-        /// set force fan flag
-        /// </summary>
-        /// <param name="value"></param>
-        public bool ForceFan
-        {
-            set => NativeMethodsBase.AUTDDeviceSetForceFan(Ptr, value);
-        }
-
-        /// <summary>
-        /// set reads FPGA info flag
-        /// </summary>
-        /// <param name="value"></param>
-        public bool ReadsFPGAInfo
-        {
-            set => NativeMethodsBase.AUTDDeviceSetReadsFPGAInfo(Ptr, value);
-        }
-
         public void Translate(Vector3 t)
         {
             NativeMethodsBase.AUTDDeviceTranslate(Ptr, t.x, t.y, t.z);

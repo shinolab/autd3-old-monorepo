@@ -139,12 +139,6 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDDeviceAffine.argtypes = [DevicePtr, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double]  # type: ignore 
         self.dll.AUTDDeviceAffine.restype = None
 
-        self.dll.AUTDDeviceSetReadsFPGAInfo.argtypes = [DevicePtr, ctypes.c_bool]  # type: ignore 
-        self.dll.AUTDDeviceSetReadsFPGAInfo.restype = None
-
-        self.dll.AUTDDeviceSetForceFan.argtypes = [DevicePtr, ctypes.c_bool]  # type: ignore 
-        self.dll.AUTDDeviceSetForceFan.restype = None
-
         self.dll.AUTDDeviceEnableSet.argtypes = [DevicePtr, ctypes.c_bool]  # type: ignore 
         self.dll.AUTDDeviceEnableSet.restype = None
 
@@ -217,9 +211,6 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDDatagramClear.argtypes = [] 
         self.dll.AUTDDatagramClear.restype = DatagramPtr
 
-        self.dll.AUTDDatagramUpdateFlags.argtypes = [] 
-        self.dll.AUTDDatagramUpdateFlags.restype = DatagramPtr
-
         self.dll.AUTDDatagramStop.argtypes = [] 
         self.dll.AUTDDatagramStop.restype = DatagramSpecialPtr
 
@@ -228,6 +219,12 @@ class NativeMethods(metaclass=Singleton):
 
         self.dll.AUTDDatagramConfigureDebugOutputIdx.argtypes = [ctypes.c_void_p, ctypes.c_void_p, GeometryPtr]  # type: ignore 
         self.dll.AUTDDatagramConfigureDebugOutputIdx.restype = DatagramPtr
+
+        self.dll.AUTDDatagramConfigureForceFan.argtypes = [ctypes.c_void_p, ctypes.c_void_p, GeometryPtr]  # type: ignore 
+        self.dll.AUTDDatagramConfigureForceFan.restype = DatagramPtr
+
+        self.dll.AUTDDatagramConfigureReadsFPGAInfo.argtypes = [ctypes.c_void_p, ctypes.c_void_p, GeometryPtr]  # type: ignore 
+        self.dll.AUTDDatagramConfigureReadsFPGAInfo.restype = DatagramPtr
 
         self.dll.AUTDDatagramSilencer.argtypes = [ctypes.c_uint16, ctypes.c_uint16] 
         self.dll.AUTDDatagramSilencer.restype = ResultDatagram
@@ -294,9 +291,6 @@ class NativeMethods(metaclass=Singleton):
 
         self.dll.AUTDLinkAuditCpuRxData.argtypes = [LinkPtr, ctypes.c_uint32]  # type: ignore 
         self.dll.AUTDLinkAuditCpuRxData.restype = ctypes.c_uint8
-
-        self.dll.AUTDLinkAuditCpuFpgaFlags.argtypes = [LinkPtr, ctypes.c_uint32]  # type: ignore 
-        self.dll.AUTDLinkAuditCpuFpgaFlags.restype = ctypes.c_uint8
 
         self.dll.AUTDLinkAuditFpgaAssertThermalSensor.argtypes = [LinkPtr, ctypes.c_uint32]  # type: ignore 
         self.dll.AUTDLinkAuditFpgaAssertThermalSensor.restype = None
@@ -562,12 +556,6 @@ class NativeMethods(metaclass=Singleton):
     def device_affine(self, dev: DevicePtr, x: float, y: float, z: float, w: float, i: float, j: float, k: float) -> None:
         return self.dll.AUTDDeviceAffine(dev, x, y, z, w, i, j, k)
 
-    def device_set_reads_fpga_info(self, dev: DevicePtr, value: bool) -> None:
-        return self.dll.AUTDDeviceSetReadsFPGAInfo(dev, value)
-
-    def device_set_force_fan(self, dev: DevicePtr, value: bool) -> None:
-        return self.dll.AUTDDeviceSetForceFan(dev, value)
-
     def device_enable_set(self, dev: DevicePtr, value: bool) -> None:
         return self.dll.AUTDDeviceEnableSet(dev, value)
 
@@ -640,9 +628,6 @@ class NativeMethods(metaclass=Singleton):
     def datagram_clear(self) -> DatagramPtr:
         return self.dll.AUTDDatagramClear()
 
-    def datagram_update_flags(self) -> DatagramPtr:
-        return self.dll.AUTDDatagramUpdateFlags()
-
     def datagram_stop(self) -> DatagramSpecialPtr:
         return self.dll.AUTDDatagramStop()
 
@@ -651,6 +636,12 @@ class NativeMethods(metaclass=Singleton):
 
     def datagram_configure_debug_output_idx(self, f: ctypes.c_void_p | None, context: ctypes.c_void_p | None, geometry: GeometryPtr) -> DatagramPtr:
         return self.dll.AUTDDatagramConfigureDebugOutputIdx(f, context, geometry)
+
+    def datagram_configure_force_fan(self, f: ctypes.c_void_p | None, context: ctypes.c_void_p | None, geometry: GeometryPtr) -> DatagramPtr:
+        return self.dll.AUTDDatagramConfigureForceFan(f, context, geometry)
+
+    def datagram_configure_reads_fpga_info(self, f: ctypes.c_void_p | None, context: ctypes.c_void_p | None, geometry: GeometryPtr) -> DatagramPtr:
+        return self.dll.AUTDDatagramConfigureReadsFPGAInfo(f, context, geometry)
 
     def datagram_silencer(self, step_intensity: int, step_phase: int) -> ResultDatagram:
         return self.dll.AUTDDatagramSilencer(step_intensity, step_phase)
@@ -717,9 +708,6 @@ class NativeMethods(metaclass=Singleton):
 
     def link_audit_cpu_rx_data(self, audit: LinkPtr, idx: int) -> ctypes.c_uint8:
         return self.dll.AUTDLinkAuditCpuRxData(audit, idx)
-
-    def link_audit_cpu_fpga_flags(self, audit: LinkPtr, idx: int) -> ctypes.c_uint8:
-        return self.dll.AUTDLinkAuditCpuFpgaFlags(audit, idx)
 
     def link_audit_fpga_assert_thermal_sensor(self, audit: LinkPtr, idx: int) -> None:
         return self.dll.AUTDLinkAuditFpgaAssertThermalSensor(audit, idx)

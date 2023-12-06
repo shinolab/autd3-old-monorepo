@@ -1,6 +1,5 @@
-from pyautd3 import UpdateFlags
+from pyautd3 import ConfigureReadsFPGAInfo
 
-autd.geometry[0].reads_fpga_info = True
-autd.send(UpdateFlags())
+autd.send(ConfigureReadsFPGAInfo(lambda _: True))
 
 info = autd.fpga_info

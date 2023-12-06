@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/12/2023
+// Last Modified: 06/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,9 @@
 #include <string>
 
 #include "autd3/datagram/debug.hpp"
+#include "autd3/datagram/force_fan.hpp"
 #include "autd3/datagram/mod_delay.hpp"
+#include "autd3/datagram/reads_fpga_info.hpp"
 #include "autd3/gain/bessel.hpp"
 #include "autd3/gain/cache.hpp"
 #include "autd3/gain/focus.hpp"
@@ -76,11 +78,12 @@ using internal::SamplingConfiguration;
 using modulation::Modulation;
 
 using datagram::ConfigureDebugOutputIdx;
+using datagram::ConfigureForceFan;
 using datagram::ConfigureModDelay;
+using datagram::ConfigureReadsFPGAInfo;
 using internal::Clear;
 using internal::Silencer;
 using internal::Synchronize;
-using internal::UpdateFlags;
 
 using internal::Stop;
 

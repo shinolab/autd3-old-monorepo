@@ -4,7 +4,7 @@
  * Created Date: 06/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/12/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -131,6 +131,7 @@ impl FPGAEmulator {
 
     pub fn is_force_fan(&self) -> bool {
         (self.controller_bram[ADDR_CTL_REG] & (1 << CTL_REG_FORCE_FAN_BIT)) != 0
+            || (self.controller_bram[ADDR_CTL_REG] & (1 << CTL_REG_FORCE_FAN_EX_BIT)) != 0
     }
 
     pub fn is_stm_mode(&self) -> bool {

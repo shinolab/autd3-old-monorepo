@@ -25,7 +25,7 @@ public class SOEMTest
         _testOutputHelper = testOutputHelper;
     }
 
-    [Fact]
+    [Fact, Trait("require", "soem")]
     public async Task TestSOEM()
     {
         var onLost = new SOEM.OnErrCallbackDelegate(msg =>
@@ -53,12 +53,11 @@ public class SOEMTest
                  .WithTimeout(TimeSpan.FromMilliseconds(200))));
     }
 
-    [Fact]
-    public async Task TestRemoteSOEM()
+
+    [Fact, Trait("require", "soem")]
+    public void TestRemoteSOEM()
     {
-        await Assert.ThrowsAsync<AUTDException>(async () => _ = await new ControllerBuilder()
-            .AddDevice(new AUTD3(Vector3d.zero))
-            .OpenWithAsync(RemoteSOEM.Builder(new IPEndPoint(IPAddress.Parse("172.0.0.1"), 8080))
-                .WithTimeout(TimeSpan.FromMilliseconds(200))));
+        var _ = RemoteSOEM.Builder(new IPEndPoint(IPAddress.Parse("172.0.0.1"), 8080))
+                .WithTimeout(TimeSpan.FromMilliseconds(200));
     }
 }

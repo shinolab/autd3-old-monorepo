@@ -43,7 +43,7 @@ class TwinCAT(Link):
             return self
 
         def _link_builder_ptr(self: "TwinCAT._Builder") -> LinkBuilderPtr:
-            return LinkTwinCAT().link_twin_cat_into_builder(self._builder)
+            return LinkTwinCAT().link_twin_cat_into_builder(self._builder)  # pragma: no cover
 
         def _resolve_link(self: "TwinCAT._Builder", _ptr: ControllerPtr) -> "TwinCAT":
             return TwinCAT(Base().link_get(_ptr))
@@ -97,7 +97,7 @@ class RemoteTwinCAT(Link):
             return self
 
         def _link_builder_ptr(self: "RemoteTwinCAT._Builder") -> LinkBuilderPtr:
-            return LinkTwinCAT().link_remote_twin_cat_into_builder(self._builder)
+            return LinkTwinCAT().link_remote_twin_cat_into_builder(self._builder)  # pragma: no cover
 
         def _resolve_link(self: "RemoteTwinCAT._Builder", _ptr: ControllerPtr) -> "RemoteTwinCAT":
             return RemoteTwinCAT(Base().link_get(_ptr))

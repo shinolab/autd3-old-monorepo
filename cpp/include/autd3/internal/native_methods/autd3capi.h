@@ -71,8 +71,6 @@ void AUTDFirmwareLatest(char *latest);
 
 [[nodiscard]] DatagramPtr AUTDDatagramClear();
 
-[[nodiscard]] DatagramPtr AUTDDatagramUpdateFlags();
-
 [[nodiscard]] DatagramSpecialPtr AUTDDatagramStop();
 
 [[nodiscard]]
@@ -84,6 +82,16 @@ DatagramPtr AUTDDatagramConfigureModDelay(void* f,
 DatagramPtr AUTDDatagramConfigureDebugOutputIdx(void* f,
                                                 void* context,
                                                 GeometryPtr geometry);
+
+[[nodiscard]]
+DatagramPtr AUTDDatagramConfigureForceFan(void* f,
+                                          void* context,
+                                          GeometryPtr geometry);
+
+[[nodiscard]]
+DatagramPtr AUTDDatagramConfigureReadsFPGAInfo(void* f,
+                                               void* context,
+                                               GeometryPtr geometry);
 
 [[nodiscard]] ResultDatagram AUTDDatagramSilencer(uint16_t step_intensity, uint16_t step_phase);
 
@@ -209,10 +217,6 @@ void AUTDDeviceAffine(DevicePtr dev,
                       double j,
                       double k);
 
-void AUTDDeviceSetReadsFPGAInfo(DevicePtr dev, bool value);
-
-void AUTDDeviceSetForceFan(DevicePtr dev, bool value);
-
 void AUTDDeviceEnableSet(DevicePtr dev, bool value);
 
 [[nodiscard]] bool AUTDDeviceEnableGet(DevicePtr dev);
@@ -266,8 +270,6 @@ void AUTDLinkAuditCpuUpdate(LinkPtr audit, uint32_t idx);
 [[nodiscard]] uint8_t AUTDLinkAuditCpuAck(LinkPtr audit, uint32_t idx);
 
 [[nodiscard]] uint8_t AUTDLinkAuditCpuRxData(LinkPtr audit, uint32_t idx);
-
-[[nodiscard]] uint8_t AUTDLinkAuditCpuFpgaFlags(LinkPtr audit, uint32_t idx);
 
 void AUTDLinkAuditFpgaAssertThermalSensor(LinkPtr audit, uint32_t idx);
 

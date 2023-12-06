@@ -106,12 +106,6 @@ namespace AUTD3Sharp.NativeMethods
         [DllImport(__DllName, EntryPoint = "AUTDDeviceAffine", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern void AUTDDeviceAffine(DevicePtr dev, double x, double y, double z, double w, double i, double j, double k);
 
-        [DllImport(__DllName, EntryPoint = "AUTDDeviceSetReadsFPGAInfo", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void AUTDDeviceSetReadsFPGAInfo(DevicePtr dev, [MarshalAs(UnmanagedType.U1)] bool value);
-
-        [DllImport(__DllName, EntryPoint = "AUTDDeviceSetForceFan", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void AUTDDeviceSetForceFan(DevicePtr dev, [MarshalAs(UnmanagedType.U1)] bool value);
-
         [DllImport(__DllName, EntryPoint = "AUTDDeviceEnableSet", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern void AUTDDeviceEnableSet(DevicePtr dev, [MarshalAs(UnmanagedType.U1)] bool value);
 
@@ -185,9 +179,6 @@ namespace AUTD3Sharp.NativeMethods
         [DllImport(__DllName, EntryPoint = "AUTDDatagramClear", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern DatagramPtr AUTDDatagramClear();
 
-        [DllImport(__DllName, EntryPoint = "AUTDDatagramUpdateFlags", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern DatagramPtr AUTDDatagramUpdateFlags();
-
         [DllImport(__DllName, EntryPoint = "AUTDDatagramStop", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern DatagramSpecialPtr AUTDDatagramStop();
 
@@ -196,6 +187,12 @@ namespace AUTD3Sharp.NativeMethods
 
         [DllImport(__DllName, EntryPoint = "AUTDDatagramConfigureDebugOutputIdx", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern DatagramPtr AUTDDatagramConfigureDebugOutputIdx(IntPtr f, IntPtr context, GeometryPtr geometry);
+
+        [DllImport(__DllName, EntryPoint = "AUTDDatagramConfigureForceFan", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern DatagramPtr AUTDDatagramConfigureForceFan(IntPtr f, IntPtr context, GeometryPtr geometry);
+
+        [DllImport(__DllName, EntryPoint = "AUTDDatagramConfigureReadsFPGAInfo", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern DatagramPtr AUTDDatagramConfigureReadsFPGAInfo(IntPtr f, IntPtr context, GeometryPtr geometry);
 
         [DllImport(__DllName, EntryPoint = "AUTDDatagramSilencer", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern ResultDatagram AUTDDatagramSilencer(ushort step_intensity, ushort step_phase);
@@ -263,9 +260,6 @@ namespace AUTD3Sharp.NativeMethods
 
         [DllImport(__DllName, EntryPoint = "AUTDLinkAuditCpuRxData", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern byte AUTDLinkAuditCpuRxData(LinkPtr audit, uint idx);
-
-        [DllImport(__DllName, EntryPoint = "AUTDLinkAuditCpuFpgaFlags", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern byte AUTDLinkAuditCpuFpgaFlags(LinkPtr audit, uint idx);
 
         [DllImport(__DllName, EntryPoint = "AUTDLinkAuditFpgaAssertThermalSensor", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern void AUTDLinkAuditFpgaAssertThermalSensor(LinkPtr audit, uint idx);

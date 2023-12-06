@@ -4,15 +4,15 @@
  * Created Date: 07/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/12/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
-pub const CPU_VERSION_MAJOR: u16 = 0x8B;
-pub const CPU_VERSION_MINOR: u16 = 0x01;
+pub const CPU_VERSION_MAJOR: u16 = 0x8C;
+pub const CPU_VERSION_MINOR: u16 = 0x00;
 
 pub const BRAM_SELECT_CONTROLLER: u8 = 0x0;
 pub const BRAM_SELECT_MOD: u8 = 0x1;
@@ -23,6 +23,7 @@ pub const CTL_FLAG_OP_MODE: u16 = 1 << 9;
 pub const CTL_REG_STM_GAIN_MODE: u16 = 1 << 10;
 pub const CTL_FLAG_USE_STM_FINISH_IDX: u16 = 1 << 11;
 pub const CTL_FLAG_USE_STM_START_IDX: u16 = 1 << 12;
+pub const CTL_FLAG_FORCE_FAN: u16 = 1 << 13;
 
 pub const BRAM_ADDR_CTL_REG: u16 = 0x000;
 pub const BRAM_ADDR_FPGA_INFO: u16 = 0x001;
@@ -63,6 +64,8 @@ pub const TAG_SILENCER: u8 = 0x20;
 pub const TAG_GAIN: u8 = 0x30;
 pub const TAG_FOCUS_STM: u8 = 0x40;
 pub const TAG_GAIN_STM: u8 = 0x50;
+pub const TAG_FORCE_FAN: u8 = 0x60;
+pub const TAG_READS_FPGA_INFO: u8 = 0x61;
 pub const TAG_DEBUG: u8 = 0xF0;
 
 pub const INFO_TYPE_CPU_VERSION_MAJOR: u8 = 0x01;

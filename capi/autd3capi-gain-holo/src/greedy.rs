@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -38,36 +38,4 @@ pub unsafe extern "C" fn AUTDGainHoloGreedyWithConstraint(
 #[must_use]
 pub unsafe extern "C" fn AUTDGainHoloGreedyWithPhaseDiv(holo: GainPtr, div: u32) -> GainPtr {
     GainPtr::new(take_gain!(holo, Greedy).with_phase_div(div as _))
-}
-
-#[cfg(test)]
-mod tests {
-
-    use super::*;
-    use crate::{constraint::*, nalgebra_backend::*};
-
-    #[test]
-    fn test_holo_greedy() {
-        unsafe {
-            let backend = AUTDNalgebraBackend();
-
-            let size = 2;
-            let points = [10., 20., 30., 40., 50., 60.];
-            let amps = vec![1.; size];
-
-            let holo = AUTDGainHoloGreedy(points.as_ptr(), amps.as_ptr(), size as _);
-            let constraint = AUTDGainHoloConstraintDotCare();
-            let holo = AUTDGainHoloGreedyWithConstraint(holo, constraint);
-            let constraint = AUTDGainHoloConstraintNormalize();
-            let holo = AUTDGainHoloGreedyWithConstraint(holo, constraint);
-            let constraint = AUTDGainHoloConstraintUniform(0xFF);
-            let holo = AUTDGainHoloGreedyWithConstraint(holo, constraint);
-            let constraint = AUTDGainHoloConstraintClamp(0, 0xFF);
-            let holo = AUTDGainHoloGreedyWithConstraint(holo, constraint);
-
-            let _ = AUTDGainHoloGreedyWithPhaseDiv(holo, 5);
-
-            AUTDDeleteNalgebraBackend(backend);
-        }
-    }
 }

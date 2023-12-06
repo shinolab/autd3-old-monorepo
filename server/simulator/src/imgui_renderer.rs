@@ -4,7 +4,7 @@
  * Created Date: 23/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/12/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 use std::{ffi::CString, path::PathBuf, time::Instant};
 
 use crate::patch::imgui_winit_support::{HiDpiMode, WinitPlatform};
-use autd3_driver::fpga::{FPGAControlFlags, FPGA_CLK_FREQ};
+use autd3_driver::fpga::FPGA_CLK_FREQ;
 use autd3_firmware_emulator::CPUEmulator;
 use cgmath::{Deg, Euler};
 use chrono::{Local, TimeZone, Utc};
@@ -823,16 +823,6 @@ impl ImGuiRenderer {
                                     Self::stm_idx(system_time, cpu)
                                 ));
                             }
-
-                            ui.separator();
-                            ui.text("FPGA control flags");
-                            let fpga_flags = cpu.fpga_flags();
-                            let mut force_fan = fpga_flags.contains(FPGAControlFlags::FORCE_FAN);
-                            let mut reads_fpga_info =
-                                fpga_flags.contains(FPGAControlFlags::READS_FPGA_INFO);
-
-                            ui.checkbox("FORCE FAN", &mut force_fan);
-                            ui.checkbox("READS FPGA INFO", &mut reads_fpga_info);
                         }
                     });
 

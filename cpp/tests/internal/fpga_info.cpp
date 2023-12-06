@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/11/2023
+// Last Modified: 06/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -11,6 +11,7 @@
 
 #include <gtest/gtest.h>
 
+#include <autd3/datagram/reads_fpga_info.hpp>
 #include <autd3/internal/datagram.hpp>
 #include <autd3/internal/exception.hpp>
 #include <autd3/internal/fpga_info.hpp>
@@ -20,10 +21,7 @@
 TEST(Internal, FPGAInfo) {
   auto autd = create_controller();
 
-  for (auto& dev : autd.geometry()) dev.reads_fpga_info(true);
-
-  ASSERT_TRUE(autd.send_async(autd3::internal::UpdateFlags()).get());
-
+  ASSERT_TRUE(autd.send_async(autd3::datagram::ConfigureReadsFPGAInfo([](const auto&) { return true; })).get());
   {
     for (const auto infos = autd.fpga_info_async().get(); auto info : infos) ASSERT_FALSE(info.is_thermal_assert());
   }

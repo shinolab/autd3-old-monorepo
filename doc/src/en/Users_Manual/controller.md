@@ -4,10 +4,43 @@ The followings are introductino of APIs in `Controller` class.
 
 [[_TOC_]]
 
+## Force fan
+
+AUTD3 device has a fan, and it has three fan modes: Auto, Off, and On.
+
+In Auto mode, the temperature monitoring IC monitors the temperature of the IC, and when it exceeds a certain temperature, the fan starts automatically. 
+In Off mode, the fan is always off, and in On mode, the fan is always on. 
+
+The fan mode is switched by the jumper switch next to the fan.
+As shown in the figure below, the fan side is shorted to switch to Auto, the center is Off, and the right is On.
+
+<figure>
+    <img src="../fig/Users_Manual/fan.jpg"/>
+<figcaption>Jumper switch to specify fan mode</figcaption>
+</figure>
+
+You can force the fan to start in Auto mode by `ConfigureForceFan`.
+
+```rust,edition2021
+{{#include ../../codes/Users_Manual/controller_fan.rs}}
+```
+
+```cpp
+{{#include ../../codes/Users_Manual/controller_fan.cpp}}
+```
+
+```cs
+{{#include ../../codes/Users_Manual/controller_fan.cs}}
+```
+
+```python
+{{#include ../../codes/Users_Manual/controller_fan.py}}
+```
+
 ## fpga_info
 
 Get the FPGA status.
-Before using this, you need to set the `reads_fpga_info` flag in `Device`.
+Before using this, you need to configure reads FPGA info flag by `ConfigureReadsFPGAInfo`.
 
 ```rust,edition2021
 {{#include ../../codes/Users_Manual/controller_0.rs}}

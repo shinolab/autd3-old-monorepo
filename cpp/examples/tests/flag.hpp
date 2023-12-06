@@ -3,7 +3,7 @@
 // Created Date: 13/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/11/2023
+// Last Modified: 06/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -20,15 +20,10 @@
 
 template <typename L>
 inline void flag_test(autd3::Controller<L>& autd) {
-  for (auto& dev : autd.geometry()) {
-    dev.reads_fpga_info(true);
-    dev.force_fan(true);
-  }
-
   std::cout << "press any key to run fan..." << std::endl;
   std::cin.ignore();
 
-  autd.send_async(autd3::UpdateFlags()).get();
+  autd.send_async(autd3::ConfigureForceFan([](const auto&) { return true; }), autd3::ConfigureReadsFPGAInfo([](const auto&) { return true; })).get();
 
   bool fin = false;
   auto check_states_thread = std::thread([&] {
@@ -48,9 +43,6 @@ inline void flag_test(autd3::Controller<L>& autd) {
   fin = true;
   if (check_states_thread.joinable()) check_states_thread.join();
 
-  for (auto& dev : autd.geometry()) {
-    dev.reads_fpga_info(false);
-    dev.force_fan(false);
-  }
-  autd.send_async(autd3::UpdateFlags()).get();
+  autd.send_async(autd3::ConfigureForceFan([](const auto&) { return false; }), autd3::ConfigureReadsFPGAInfo([](const auto&) { return false; }))
+      .get();
 }

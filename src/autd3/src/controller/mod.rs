@@ -4,7 +4,7 @@
  * Created Date: 05/10/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/11/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@ use std::{collections::HashMap, hash::Hash, time::Duration};
 
 use autd3_driver::{
     cpu::{RxMessage, TxDatagram},
-    datagram::{Clear, Datagram, Stop, Synchronize, UpdateFlags},
+    datagram::{Clear, Datagram, Stop, Synchronize},
     firmware_version::FirmwareInfo,
     fpga::FPGAInfo,
     geometry::{Device, Geometry},
@@ -84,7 +84,6 @@ impl<L: Link> Controller<L> {
             tx_buf,
             rx_buf: vec![RxMessage { data: 0, ack: 0 }; num_devices],
         };
-        cnt.send(UpdateFlags::new()).await?;
         cnt.send(Clear::new()).await?;
         cnt.send(Synchronize::new()).await?;
         Ok(cnt)
@@ -103,7 +102,6 @@ impl<L: Link> Controller<L> {
             tx_buf,
             rx_buf: vec![RxMessage { data: 0, ack: 0 }; num_devices],
         };
-        cnt.send(UpdateFlags::new())?;
         cnt.send(Clear::new())?;
         cnt.send(Synchronize::new())?;
         Ok(cnt)
@@ -407,44 +405,5 @@ impl<L: Link> Controller<L> {
     pub fn fpga_info(&mut self) -> Result<Vec<FPGAInfo>, AUTDError> {
         self.link.receive(&mut self.rx_buf)?;
         Ok(self.rx_buf.iter().map(FPGAInfo::from).collect())
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::link::Audit;
-
-    use autd3_driver::{autd3_device::AUTD3, geometry::Vector3};
-
-    use super::*;
-
-    #[tokio::test]
-    async fn group() {
-        let mut autd = Controller::builder()
-            .add_device(AUTD3::new(Vector3::zeros()))
-            .add_device(AUTD3::new(Vector3::zeros()))
-            .add_device(AUTD3::new(Vector3::zeros()))
-            .open_with(Audit::builder())
-            .await
-            .unwrap();
-
-        for dev in &mut autd.geometry {
-            dev.force_fan = true;
-        }
-
-        autd.group(|dev| match dev.idx() {
-            0 => Some("0"),
-            1 => Some("1"),
-            _ => None,
-        })
-        .set("0", UpdateFlags::new())
-        .unwrap()
-        .send()
-        .await
-        .unwrap();
-
-        assert!(autd.link.emulators()[0].fpga().is_force_fan());
-        assert!(!autd.link.emulators()[1].fpga().is_force_fan());
-        assert!(!autd.link.emulators()[2].fpga().is_force_fan());
     }
 }
