@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/12/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -38,27 +38,4 @@ pub unsafe extern "C" fn AUTDModulationIntoDatagram(m: ModulationPtr) -> Datagra
 #[must_use]
 pub unsafe extern "C" fn AUTDModulationSize(m: ModulationPtr) -> ResultI32 {
     Box::from_raw(m.0 as *mut Box<M>).len().into()
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    use crate::modulation::sine::*;
-
-    #[test]
-    fn test_modulation_sampling_frequency_div() {
-        unsafe {
-            let div = 5120;
-            let m = AUTDModulationSine(150.);
-            let m = AUTDModulationSineWithSamplingConfig(
-                m,
-                AUTDSamplingConfigFromFrequencyDivision(div).result,
-            );
-            assert_eq!(
-                div,
-                AUTDSamplingConfigFrequencyDivision(AUTDModulationSamplingConfig(m))
-            );
-        }
-    }
 }

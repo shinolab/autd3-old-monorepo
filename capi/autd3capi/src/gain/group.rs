@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/12/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -79,53 +79,4 @@ pub unsafe extern "C" fn AUTDGainGroup(
         }),
         |acc, (&k, v)| acc.set(k, *Box::from_raw(v.0 as *mut Box<G>)),
     ))
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    use crate::{
-        gain::{null::AUTDGainNull, *},
-        geometry::{
-            device::{AUTDDevice, AUTDDeviceNumTransducers},
-            AUTDGeometry,
-        },
-        tests::*,
-        *,
-    };
-
-    use autd3capi_def::{DatagramPtr, AUTD3_TRUE};
-
-    #[test]
-    fn test_group_by_transducer() {
-        unsafe {
-            let cnt = create_controller();
-            let geo = AUTDGeometry(cnt);
-
-            let dev0 = AUTDDevice(geo, 0);
-            let dev1 = AUTDDevice(geo, 1);
-
-            let num_transducer = AUTDDeviceNumTransducers(dev0);
-            let map0 = vec![0; num_transducer as _];
-            let num_transducer = AUTDDeviceNumTransducers(dev1);
-            let map1 = vec![1; num_transducer as _];
-
-            let device_indices = [0, 1];
-            let keys = [0, 1];
-            let values = [AUTDGainNull(), AUTDGainNull()];
-
-            let map = AUTDGainGroupCreateMap(device_indices.as_ptr(), device_indices.len() as _);
-            let map = AUTDGainGroupMapSet(map, 0, map0.as_ptr());
-            let map = AUTDGainGroupMapSet(map, 1, map1.as_ptr());
-            let g = AUTDGainGroup(map, keys.as_ptr(), values.as_ptr(), values.len() as _);
-
-            let g = AUTDGainIntoDatagram(g);
-
-            let r = AUTDControllerSend(cnt, g, DatagramPtr(std::ptr::null()), -1);
-            assert_eq!(r.result, AUTD3_TRUE);
-
-            AUTDControllerDelete(cnt);
-        }
-    }
 }

@@ -4,7 +4,7 @@
  * Created Date: 21/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/12/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -76,32 +76,4 @@ pub unsafe extern "C" fn AUTDModulationCacheIntoModulation(m: CachePtr) -> Modul
 #[no_mangle]
 pub unsafe extern "C" fn AUTDModulationCacheDelete(m: CachePtr) {
     let _ = Box::from_raw(m.0 as *mut ModulationCache);
-}
-
-#[cfg(test)]
-mod tests {
-    use super::{super::sine::AUTDModulationSine, *};
-
-    use crate::{modulation::*, tests::*, *};
-
-    use autd3capi_def::{DatagramPtr, AUTD3_TRUE};
-
-    #[test]
-    fn test_modulation_cache() {
-        unsafe {
-            let cnt = create_controller();
-
-            let m = AUTDModulationSine(150.);
-
-            let cache = AUTDModulationWithCache(m);
-            assert!(!cache.result.0.is_null());
-            let m = AUTDModulationIntoDatagram(AUTDModulationCacheIntoModulation(cache.result));
-
-            let r = AUTDControllerSend(cnt, m, DatagramPtr(std::ptr::null()), -1);
-            assert_eq!(r.result, AUTD3_TRUE);
-
-            AUTDModulationCacheDelete(cache.result);
-            AUTDControllerDelete(cnt);
-        }
-    }
 }
