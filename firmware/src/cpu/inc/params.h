@@ -3,7 +3,7 @@
 // Created Date: 22/04/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/11/2023
+// Last Modified: 06/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -48,6 +48,7 @@
 #define CTL_FLAG_STM_GAIN_MODE_BIT (10)
 #define CTL_FLAG_USE_STM_FINISH_IDX_BIT (11)
 #define CTL_FLAG_USE_STM_START_IDX_BIT (12)
+#define CTL_FLAG_FORCE_FAN_EX_BIT (13)
 #define CTL_FLAG_SYNC_BIT (15)
 
 #define CTL_FLAG_FORCE_FAN (1 << CTL_FLAG_FORCE_FAN_BIT)
@@ -56,6 +57,7 @@
 #define CTL_FLAG_STM_GAIN_MODE (1 << CTL_FLAG_STM_GAIN_MODE_BIT)
 #define CTL_FLAG_USE_STM_FINISH_IDX (1 << CTL_FLAG_USE_STM_FINISH_IDX_BIT)
 #define CTL_FLAG_USE_STM_START_IDX (1 << CTL_FLAG_USE_STM_START_IDX_BIT)
+#define CTL_FLAG_FORCE_FAN_EX (1 << CTL_FLAG_FORCE_FAN_EX_BIT)
 #define CTL_FLAG_SYNC (1 << CTL_FLAG_SYNC_BIT)
 
 #define TAG_NONE (0x00)
@@ -69,6 +71,7 @@
 #define TAG_GAIN (0x30)
 #define TAG_FOCUS_STM (0x40)
 #define TAG_GAIN_STM (0x50)
+#define TAG_FORCE_FAN (0x60)
 #define TAG_DEBUG (0xF0)
 
 #define INFO_TYPE_CPU_VERSION_MAJOR (0x01)

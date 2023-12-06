@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/12/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -18,8 +18,8 @@
 #include "params.h"
 #include "utils.h"
 
-#define CPU_VERSION_MAJOR (0x8B) /* v4.0 */
-#define CPU_VERSION_MINOR (0x01)
+#define CPU_VERSION_MAJOR (0x8C) /* v4.1 */
+#define CPU_VERSION_MINOR (0x00)
 
 #define MOD_BUF_PAGE_SIZE_WIDTH (15)
 #define MOD_BUF_PAGE_SIZE (1 << MOD_BUF_PAGE_SIZE_WIDTH)
@@ -456,8 +456,14 @@ static void write_gain_stm(const volatile uint8_t* p_data) {
   if ((flag & GAIN_STM_FLAG_END) == GAIN_STM_FLAG_END) {
     _fpga_flags_internal |= CTL_FLAG_OP_MODE;
     _fpga_flags_internal |= CTL_FLAG_STM_GAIN_MODE;
-    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE,
-               max(1, _stm_cycle) - 1);
+  }
+}
+
+static void configure_force_fan(const volatile uint8_t* p_data) {
+  if (p_data[0] != 0) {
+    _fpga_flags_internal |= CTL_FLAG_FORCE_FAN_EX;
+  } else {
+    _fpga_flags_internal &= ~CTL_FLAG_FORCE_FAN_EX;
   }
 }
 
@@ -561,6 +567,9 @@ void handle_payload(uint8_t tag, const volatile uint8_t* p_data) {
       break;
     case TAG_GAIN_STM:
       write_gain_stm(p_data);
+      break;
+    case TAG_FORCE_FAN:
+      configure_force_fan(p_data + 2);
       break;
     case TAG_DEBUG:
       configure_debug(p_data + 2);

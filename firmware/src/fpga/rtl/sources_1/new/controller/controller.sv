@@ -4,7 +4,7 @@
  * Created Date: 01/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/11/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Hapis Lab. All rights reserved.
@@ -87,7 +87,7 @@ module controller #(
   assign cpu_data_in = CPU_BUS.DATA_IN;
   assign CPU_BUS.DATA_OUT = cpu_data_out;
 
-  assign FORCE_FAN = ctl_reg[CTL_FLAG_FORCE_FAN_BIT];
+  assign FORCE_FAN = ctl_reg[CTL_FLAG_FORCE_FAN_BIT] | ctl_reg[CTL_FLAG_FORCE_FAN_EX_BIT];
   assign OP_MODE = ctl_reg[CTL_FLAG_OP_MODE_BIT];
   assign STM_GAIN_MODE = ctl_reg[CTL_FLAG_STM_GAIN_MODE_BIT];
   assign USE_STM_START_IDX = ctl_reg[CTL_FLAG_USE_STM_START_IDX_BIT];
@@ -248,7 +248,7 @@ module controller #(
       RD_DEBUG_OUTPUT_REQ_RD_STM_CYCLE: begin
         addr <= ADDR_STM_CYCLE;
 
-        debug_output_idx = dout[7:0];
+        debug_output_idx <= dout[7:0];
 
         state <= RD_SILENT_STEP_INTENSITY_REQ_RD_STM_FREQ_DIV_0;
       end
