@@ -467,6 +467,8 @@ static void configure_force_fan(const volatile uint8_t* p_data) {
   }
 }
 
+static void configure_reads_fpga_info(const volatile uint8_t* p_data) { _read_fpga_info = p_data[0] != 0; }
+
 static void clear(void) {
   uint32_t freq_div_4k = 5120;
 
@@ -570,6 +572,9 @@ void handle_payload(uint8_t tag, const volatile uint8_t* p_data) {
       break;
     case TAG_FORCE_FAN:
       configure_force_fan(p_data + 2);
+      break;
+    case TAG_READS_FPGA_INFO:
+      configure_reads_fpga_info(p_data + 2);
       break;
     case TAG_DEBUG:
       configure_debug(p_data + 2);
