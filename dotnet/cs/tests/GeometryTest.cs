@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/12/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -36,6 +36,30 @@ public class GeometryTest
     {
         var autd = await AUTDTest.CreateController();
         Assert.Equal(2, autd.Geometry.NumDevices);
+    }
+
+
+    [Fact]
+    public async Task GeometryNumTransducers()
+    {
+        var autd = await AUTDTest.CreateController();
+        Assert.Equal(2 * 249, autd.Geometry.NumTransducers);
+    }
+
+    [Fact]
+    public async Task TestGeometrySoundSpeed()
+    {
+        var autd = await AUTDTest.CreateController();
+        autd.Geometry.SetSoundSpeed(350e3);
+        foreach (var dev in autd.Geometry) Assert.Equal(350e3, dev.SoundSpeed);
+    }
+
+    [Fact]
+    public async Task TestGeometrySetSoundSpeedFromTemp()
+    {
+        var autd = await AUTDTest.CreateController();
+        autd.Geometry.SetSoundSpeedFromTemp(15);
+        foreach (var dev in autd.Geometry) Assert.Equal(340.2952640537549e3, dev.SoundSpeed);
     }
 
     [Fact]

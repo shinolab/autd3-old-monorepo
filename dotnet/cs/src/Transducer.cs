@@ -4,7 +4,7 @@
  * Created Date: 08/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/12/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -57,15 +57,12 @@ namespace AUTD3Sharp
         {
             get
             {
-                var pos = new float_t[3];
                 unsafe
                 {
-                    fixed (float_t* p = pos)
-                    {
-                        NativeMethodsBase.AUTDTransducerPosition(Ptr, p);
-                    }
+                    float_t* pos = stackalloc float_t[3];
+                    NativeMethodsBase.AUTDTransducerPosition(Ptr, pos);
+                    return new Vector3(pos[0], pos[1], pos[2]);
                 }
-                return new Vector3(pos[0], pos[1], pos[2]);
             }
         }
 
@@ -76,15 +73,12 @@ namespace AUTD3Sharp
         {
             get
             {
-                var rot = new float_t[4];
                 unsafe
                 {
-                    fixed (float_t* p = rot)
-                    {
-                        NativeMethodsBase.AUTDTransducerRotation(Ptr, p);
-                    }
+                    float_t* rot = stackalloc float_t[3];
+                    NativeMethodsBase.AUTDTransducerRotation(Ptr, rot);
+                    return new Quaternion(rot[1], rot[2], rot[3], rot[0]);
                 }
-                return new Quaternion(rot[1], rot[2], rot[3], rot[0]);
             }
         }
 
@@ -95,15 +89,12 @@ namespace AUTD3Sharp
         {
             get
             {
-                var dir = new float_t[3];
                 unsafe
                 {
-                    fixed (float_t* p = dir)
-                    {
-                        NativeMethodsBase.AUTDTransducerDirectionX(Ptr, p);
-                    }
+                    float_t* dir = stackalloc float_t[3];
+                    NativeMethodsBase.AUTDTransducerDirectionX(Ptr, dir);
+                    return new Vector3(dir[0], dir[1], dir[2]);
                 }
-                return new Vector3(dir[0], dir[1], dir[2]);
             }
         }
 
@@ -114,15 +105,12 @@ namespace AUTD3Sharp
         {
             get
             {
-                var dir = new float_t[3];
                 unsafe
                 {
-                    fixed (float_t* p = dir)
-                    {
-                        NativeMethodsBase.AUTDTransducerDirectionY(Ptr, p);
-                    }
+                    float_t* dir = stackalloc float_t[3];
+                    NativeMethodsBase.AUTDTransducerDirectionY(Ptr, dir);
+                    return new Vector3(dir[0], dir[1], dir[2]);
                 }
-                return new Vector3(dir[0], dir[1], dir[2]);
             }
         }
 
@@ -133,15 +121,12 @@ namespace AUTD3Sharp
         {
             get
             {
-                var dir = new float_t[3];
                 unsafe
                 {
-                    fixed (float_t* p = dir)
-                    {
-                        NativeMethodsBase.AUTDTransducerDirectionZ(Ptr, p);
-                    }
+                    float_t* dir = stackalloc float_t[3];
+                    NativeMethodsBase.AUTDTransducerDirectionZ(Ptr, dir);
+                    return new Vector3(dir[0], dir[1], dir[2]);
                 }
-                return new Vector3(dir[0], dir[1], dir[2]);
             }
         }
 

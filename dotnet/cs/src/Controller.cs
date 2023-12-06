@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/12/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -180,7 +180,7 @@ namespace AUTD3Sharp
             var info = new byte[256];
             unsafe
             {
-                fixed (byte* p = info)
+                fixed (byte* p = &info[0])
                 {
                     NativeMethodsBase.AUTDControllerFirmwareInfoGet(handle, i, p);
                     return new FirmwareInfo(System.Text.Encoding.UTF8.GetString(info));
@@ -218,15 +218,7 @@ namespace AUTD3Sharp
         /// <exception cref="AUTDException"></exception>
         public async Task<bool> CloseAsync()
         {
-            if (Ptr.Item1 == IntPtr.Zero) return false;
-            var res = await Task.Run(() => NativeMethodsBase.AUTDControllerClose(Ptr));
-            if (res.result != NativeMethodsDef.AUTD3_ERR) return res.result == NativeMethodsDef.AUTD3_TRUE;
-            var err = new byte[res.err_len];
-            unsafe
-            {
-                fixed (byte* ep = err) NativeMethodsDef.AUTDGetErr(res.err, ep);
-                throw new AUTDException(err);
-            }
+            return await Task.Run(() => NativeMethodsBase.AUTDControllerClose(Ptr).Validate() == NativeMethodsDef.AUTD3_TRUE);
         }
 
         /// <summary>
@@ -235,15 +227,7 @@ namespace AUTD3Sharp
         /// <exception cref="AUTDException"></exception>
         public bool Close()
         {
-            if (Ptr.Item1 == IntPtr.Zero) return false;
-            var res = NativeMethodsBase.AUTDControllerClose(Ptr);
-            if (res.result != NativeMethodsDef.AUTD3_ERR) return res.result == NativeMethodsDef.AUTD3_TRUE;
-            var err = new byte[res.err_len];
-            unsafe
-            {
-                fixed (byte* ep = err) NativeMethodsDef.AUTDGetErr(res.err, ep);
-                throw new AUTDException(err);
-            }
+            return NativeMethodsBase.AUTDControllerClose(Ptr).Validate() == NativeMethodsDef.AUTD3_TRUE;
         }
 
         public void Dispose()
@@ -274,21 +258,15 @@ namespace AUTD3Sharp
         public async Task<FPGAInfo[]> FPGAInfoAsync()
         {
             var infos = new byte[Geometry.NumDevices];
-            var res = await Task.Run(() =>
+            await Task.Run(() =>
             {
                 unsafe
                 {
-                    fixed (byte* ptr = infos)
-                        return NativeMethodsBase.AUTDControllerFPGAInfo(Ptr, ptr);
+                    fixed (byte* ptr = &infos[0])
+                        return NativeMethodsBase.AUTDControllerFPGAInfo(Ptr, ptr).Validate();
                 }
             });
-            if (res.result != NativeMethodsDef.AUTD3_ERR) return infos.Select(x => new FPGAInfo(x)).ToArray();
-            var err = new byte[res.err_len];
-            unsafe
-            {
-                fixed (byte* ep = err) NativeMethodsDef.AUTDGetErr(res.err, ep);
-                throw new AUTDException(err);
-            }
+            return infos.Select(x => new FPGAInfo(x)).ToArray();
         }
 
 
@@ -300,13 +278,10 @@ namespace AUTD3Sharp
             var infos = new byte[Geometry.NumDevices];
             unsafe
             {
-                fixed (byte* ptr = infos)
+                fixed (byte* ptr = &infos[0])
                 {
-                    var res = NativeMethodsBase.AUTDControllerFPGAInfo(Ptr, ptr);
-                    if (res.result != NativeMethodsDef.AUTD3_ERR) return infos.Select(x => new FPGAInfo(x)).ToArray();
-                    var err = new byte[res.err_len];
-                    fixed (byte* ep = err) NativeMethodsDef.AUTDGetErr(res.err, ep);
-                    throw new AUTDException(err);
+                    NativeMethodsBase.AUTDControllerFPGAInfo(Ptr, ptr).Validate();
+                    return infos.Select(x => new FPGAInfo(x)).ToArray();
                 }
             }
         }
@@ -325,21 +300,10 @@ namespace AUTD3Sharp
         /// <exception cref="AUTDException"></exception>
         public async Task<bool> SendAsync(ISpecialDatagram special, TimeSpan? timeout = null)
         {
-            if (special == null) throw new ArgumentNullException(nameof(special));
-
-            var res = await Task.Run(() =>
-                NativeMethodsBase.AUTDControllerSendSpecial(Ptr, special.Ptr(),
-                    (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1)));
-            if (res.result != NativeMethodsDef.AUTD3_ERR) return res.result == NativeMethodsDef.AUTD3_TRUE;
-            var err = new byte[res.err_len];
-            unsafe
-            {
-                fixed (byte* ep = err) NativeMethodsDef.AUTDGetErr(res.err, ep);
-                throw new AUTDException(err);
-            }
+            return await Task.Run(() =>
+               NativeMethodsBase.AUTDControllerSendSpecial(Ptr, special.Ptr(),
+                   (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1)).Validate() == NativeMethodsDef.AUTD3_TRUE);
         }
-
-
 
         /// <summary>
         /// Send data to the devices
@@ -351,17 +315,8 @@ namespace AUTD3Sharp
         /// <exception cref="AUTDException"></exception>
         public bool Send(ISpecialDatagram special, TimeSpan? timeout = null)
         {
-            if (special == null) throw new ArgumentNullException(nameof(special));
-
-            var res = NativeMethodsBase.AUTDControllerSendSpecial(Ptr, special.Ptr(),
-                    (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1));
-            if (res.result != NativeMethodsDef.AUTD3_ERR) return res.result == NativeMethodsDef.AUTD3_TRUE;
-            var err = new byte[res.err_len];
-            unsafe
-            {
-                fixed (byte* ep = err) NativeMethodsDef.AUTDGetErr(res.err, ep);
-                throw new AUTDException(err);
-            }
+            return NativeMethodsBase.AUTDControllerSendSpecial(Ptr, special.Ptr(),
+                    (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1)).Validate() == NativeMethodsDef.AUTD3_TRUE;
         }
 
         /// <summary>
@@ -402,18 +357,8 @@ namespace AUTD3Sharp
         /// <exception cref="AUTDException"></exception>
         public async Task<bool> SendAsync(IDatagram data1, IDatagram data2, TimeSpan? timeout = null)
         {
-            if (data1 == null) throw new ArgumentNullException(nameof(data1));
-            if (data2 == null) throw new ArgumentNullException(nameof(data2));
-
-            var res = await Task.Run(() => NativeMethodsBase.AUTDControllerSend(Ptr, data1.Ptr(Geometry), data2.Ptr(Geometry),
-                (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1)));
-            if (res.result != NativeMethodsDef.AUTD3_ERR) return res.result == NativeMethodsDef.AUTD3_TRUE;
-            var err = new byte[res.err_len];
-            unsafe
-            {
-                fixed (byte* ep = err) NativeMethodsDef.AUTDGetErr(res.err, ep);
-                throw new AUTDException(err);
-            }
+            return await Task.Run(() => NativeMethodsBase.AUTDControllerSend(Ptr, data1.Ptr(Geometry), data2.Ptr(Geometry),
+                (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1)).Validate() == NativeMethodsDef.AUTD3_TRUE);
         }
 
 
@@ -428,18 +373,8 @@ namespace AUTD3Sharp
         /// <exception cref="AUTDException"></exception>
         public bool Send(IDatagram data1, IDatagram data2, TimeSpan? timeout = null)
         {
-            if (data1 == null) throw new ArgumentNullException(nameof(data1));
-            if (data2 == null) throw new ArgumentNullException(nameof(data2));
-
-            var res = NativeMethodsBase.AUTDControllerSend(Ptr, data1.Ptr(Geometry), data2.Ptr(Geometry),
-                (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1));
-            if (res.result != NativeMethodsDef.AUTD3_ERR) return res.result == NativeMethodsDef.AUTD3_TRUE;
-            var err = new byte[res.err_len];
-            unsafe
-            {
-                fixed (byte* ep = err) NativeMethodsDef.AUTDGetErr(res.err, ep);
-                throw new AUTDException(err);
-            }
+            return NativeMethodsBase.AUTDControllerSend(Ptr, data1.Ptr(Geometry), data2.Ptr(Geometry),
+                (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1)).Validate() == NativeMethodsDef.AUTD3_TRUE;
         }
 
         /// <summary>
@@ -490,8 +425,6 @@ namespace AUTD3Sharp
             public GroupGuard Set(object key, IDatagram data1, IDatagram data2, TimeSpan? timeout = null)
             {
                 if (_keymap.ContainsKey(key)) throw new AUTDException("Key already exists");
-                if (data1 == null) throw new ArgumentNullException(nameof(data1));
-                if (data2 == null) throw new ArgumentNullException(nameof(data2));
 
                 var timeoutNs = (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1);
                 var ptr1 = data1.Ptr(_controller.Geometry);
@@ -514,7 +447,6 @@ namespace AUTD3Sharp
             public GroupGuard Set(object key, ISpecialDatagram data, TimeSpan? timeout = null)
             {
                 if (_keymap.ContainsKey(key)) throw new AUTDException("Key already exists");
-                if (data == null) throw new ArgumentNullException(nameof(data));
 
                 var timeoutNs = (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1);
                 var ptr = data.Ptr();
@@ -523,7 +455,7 @@ namespace AUTD3Sharp
                 return this;
             }
 
-            public async Task SendAsync()
+            public async Task<bool> SendAsync()
             {
                 var map = _controller.Geometry.Select(dev =>
                 {
@@ -532,24 +464,17 @@ namespace AUTD3Sharp
                     return k != null ? _keymap[k] : -1;
                 }).ToArray();
 
-                var res = await Task.Run(() =>
-                {
-                    unsafe
-                    {
-                        fixed (int* mp = map)
-                            return NativeMethodsBase.AUTDControllerGroup(_controller.Ptr, mp, _kvMap);
-                    }
-                });
-                if (res.result != NativeMethodsDef.AUTD3_ERR) return;
-                var err = new byte[res.err_len];
-                unsafe
-                {
-                    fixed (byte* ep = err) NativeMethodsDef.AUTDGetErr(res.err, ep);
-                    throw new AUTDException(err);
-                }
+                return await Task.Run(() =>
+                 {
+                     unsafe
+                     {
+                         fixed (int* mp = &map[0])
+                             return NativeMethodsBase.AUTDControllerGroup(_controller.Ptr, mp, _kvMap).Validate() == NativeMethodsDef.AUTD3_TRUE;
+                     }
+                 });
             }
 
-            public void Send()
+            public bool Send()
             {
                 var map = _controller.Geometry.Select(dev =>
                 {
@@ -559,13 +484,9 @@ namespace AUTD3Sharp
                 }).ToArray();
                 unsafe
                 {
-                    fixed (int* mp = map)
+                    fixed (int* mp = &map[0])
                     {
-                        var res = NativeMethodsBase.AUTDControllerGroup(_controller.Ptr, mp, _kvMap);
-                        if (res.result != NativeMethodsDef.AUTD3_ERR) return;
-                        var err = new byte[res.err_len];
-                        fixed (byte* ep = err) NativeMethodsDef.AUTDGetErr(res.err, ep);
-                        throw new AUTDException(err);
+                        return NativeMethodsBase.AUTDControllerGroup(_controller.Ptr, mp, _kvMap).Validate() == NativeMethodsDef.AUTD3_TRUE;
                     }
                 }
             }
@@ -601,17 +522,7 @@ namespace AUTD3Sharp
         /// <returns>Controller</returns>
         public async Task<Controller<T>> OpenWithAsync<T>(ILinkBuilder<T> linkBuilder)
         {
-            var result = await Task.Run(() => NativeMethodsBase.AUTDControllerOpenWith(_ptr, linkBuilder.Ptr()));
-            if (result.result.Item1 == IntPtr.Zero)
-            {
-                var err = new byte[result.err_len];
-                unsafe
-                {
-                    fixed (byte* ep = err) NativeMethodsDef.AUTDGetErr(result.err, ep);
-                    throw new AUTDException(err);
-                }
-            }
-            var ptr = result.result;
+            var ptr = await Task.Run(() => NativeMethodsBase.AUTDControllerOpenWith(_ptr, linkBuilder.Ptr()).Validate());
             var geometry = new Geometry(NativeMethodsBase.AUTDGeometry(ptr));
             var link = linkBuilder.ResolveLink(NativeMethodsBase.AUTDLinkGet(ptr));
             return new Controller<T>(geometry, ptr, link);
@@ -624,17 +535,7 @@ namespace AUTD3Sharp
         /// <returns>Controller</returns>
         public Controller<T> OpenWith<T>(ILinkBuilder<T> linkBuilder)
         {
-            var result = NativeMethodsBase.AUTDControllerOpenWith(_ptr, linkBuilder.Ptr());
-            if (result.result.Item1 == IntPtr.Zero)
-            {
-                var err = new byte[result.err_len];
-                unsafe
-                {
-                    fixed (byte* ep = err) NativeMethodsDef.AUTDGetErr(result.err, ep);
-                    throw new AUTDException(err);
-                }
-            }
-            var ptr = result.result;
+            var ptr = NativeMethodsBase.AUTDControllerOpenWith(_ptr, linkBuilder.Ptr()).Validate();
             var geometry = new Geometry(NativeMethodsBase.AUTDGeometry(ptr));
             var link = linkBuilder.ResolveLink(NativeMethodsBase.AUTDLinkGet(ptr));
             return new Controller<T>(geometry, ptr, link);

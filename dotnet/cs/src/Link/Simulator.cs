@@ -84,30 +84,14 @@ namespace AUTD3Sharp.Link
 
         private LinkPtr _ptr = new LinkPtr { Item1 = IntPtr.Zero };
 
-        public async Task UpdateGeometryAsync(Geometry geometry)
+        public async Task<bool> UpdateGeometryAsync(Geometry geometry)
         {
-            var res = await Task.Run(() => NativeMethodsLinkSimulator.AUTDLinkSimulatorUpdateGeometry(_ptr, geometry.Ptr));
-            if (res.result != NativeMethodsDef.AUTD3_ERR) return;
-            var err = new byte[res.err_len];
-            unsafe
-            {
-                fixed (byte* p = err)
-                    NativeMethodsDef.AUTDGetErr(res.err, p);
-                throw new AUTDException(err);
-            }
+            return await Task.Run(() => NativeMethodsLinkSimulator.AUTDLinkSimulatorUpdateGeometry(_ptr, geometry.Ptr).Validate() == NativeMethodsDef.AUTD3_TRUE);
         }
 
-        public void UpdateGeometry(Geometry geometry)
+        public bool UpdateGeometry(Geometry geometry)
         {
-            var res = NativeMethodsLinkSimulator.AUTDLinkSimulatorUpdateGeometry(_ptr, geometry.Ptr);
-            if (res.result != NativeMethodsDef.AUTD3_ERR) return;
-            var err = new byte[res.err_len];
-            unsafe
-            {
-                fixed (byte* p = err)
-                    NativeMethodsDef.AUTDGetErr(res.err, p);
-                throw new AUTDException(err);
-            }
+            return NativeMethodsLinkSimulator.AUTDLinkSimulatorUpdateGeometry(_ptr, geometry.Ptr).Validate() == NativeMethodsDef.AUTD3_TRUE;
         }
     }
 }

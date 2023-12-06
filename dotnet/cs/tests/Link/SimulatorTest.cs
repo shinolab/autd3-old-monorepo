@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/11/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,15 +17,13 @@ namespace tests.Link;
 
 public class SimulatorTest
 {
-    [Fact(Skip = "Simulator is required")]
+    [Fact]
     public async Task TestSimulator()
     {
-        var autd = await new ControllerBuilder()
+        await Assert.ThrowsAsync<AUTDException>(async () => _ = await new ControllerBuilder()
             .AddDevice(new AUTD3(Vector3d.zero))
             .OpenWithAsync(Simulator.Builder(8080)
                 .WithServerIp(IPAddress.Parse("127.0.0.1"))
-                .WithTimeout(TimeSpan.FromMilliseconds(200)));
-
-        await autd.CloseAsync();
+                .WithTimeout(TimeSpan.FromMilliseconds(200))));
     }
 }

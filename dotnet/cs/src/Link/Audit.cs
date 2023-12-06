@@ -4,7 +4,7 @@
  * Created Date: 22/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -74,11 +74,6 @@ namespace AUTD3Sharp.Link
             return NativeMethodsBase.AUTDLinkAuditLastTimeoutNs(_ptr);
         }
 
-        public void Up()
-        {
-            NativeMethodsBase.AUTDLinkAuditUp(_ptr);
-        }
-
         public void BreakDown()
         {
             NativeMethodsBase.AUTDLinkAuditBreakDown(_ptr);
@@ -125,7 +120,7 @@ namespace AUTD3Sharp.Link
             var buf = new byte[n];
             unsafe
             {
-                fixed (byte* p = buf)
+                fixed (byte* p = &buf[0])
                     NativeMethodsBase.AUTDLinkAuditFpgaModulation(_ptr, (uint)idx, p);
             }
             return buf;
@@ -142,7 +137,7 @@ namespace AUTD3Sharp.Link
             var buf = new ushort[n];
             unsafe
             {
-                fixed (ushort* p = buf)
+                fixed (ushort* p = &buf[0])
                     NativeMethodsBase.AUTDLinkAuditFpgaModDelays(_ptr, (uint)idx, p);
             }
             return buf;
@@ -155,8 +150,8 @@ namespace AUTD3Sharp.Link
             var phases = new byte[n];
             unsafe
             {
-                fixed (byte* pd = intensities)
-                fixed (byte* pp = phases)
+                fixed (byte* pd = &intensities[0])
+                fixed (byte* pp = &phases[0])
                 {
                     NativeMethodsBase.AUTDLinkAuditFpgaIntensitiesAndPhases(_ptr, (uint)idx, (uint)stmIdx, pd, pp);
                 }

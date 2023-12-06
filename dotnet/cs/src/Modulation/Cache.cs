@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using AUTD3Sharp.NativeMethods;
 
 namespace AUTD3Sharp.Modulation
@@ -25,21 +26,21 @@ namespace AUTD3Sharp.Modulation
     /// <summary>
     /// Modulation to cache the result of calculation
     /// </summary>
-    public class Cache : Internal.Modulation, IEnumerable<byte>, IDisposable
+    public class Cache : Internal.Modulation, IEnumerable<EmitIntensity>, IDisposable
     {
         private bool _isDisposed;
 
         private CachePtr _cache;
-        private readonly byte[] _buffer;
+        private readonly EmitIntensity[] _buffer;
 
         public Cache(Internal.Modulation m)
         {
             unsafe
             {
                 _cache = NativeMethodsBase.AUTDModulationWithCache(m.ModulationPtr()).Validate();
-                _buffer = new byte[NativeMethodsBase.AUTDModulationCacheGetBufferLen(_cache)];
-                fixed (byte* p = _buffer)
-                    NativeMethodsBase.AUTDModulationCacheGetBuffer(_cache, p);
+                _buffer = new EmitIntensity[NativeMethodsBase.AUTDModulationCacheGetBufferLen(_cache)];
+                fixed (EmitIntensity* p = &_buffer[0])
+                    NativeMethodsBase.AUTDModulationCacheGetBuffer(_cache, (byte*)p);
             }
         }
 
@@ -64,16 +65,18 @@ namespace AUTD3Sharp.Modulation
             return NativeMethodsBase.AUTDModulationCacheIntoModulation(_cache);
         }
 
-        public byte this[int index] => _buffer[index];
+        public EmitIntensity this[int index] => _buffer[index];
 
-        public ReadOnlyCollection<byte> Buffer => Array.AsReadOnly(_buffer);
+        public ReadOnlyCollection<EmitIntensity> Buffer => Array.AsReadOnly(_buffer);
 
-        public IEnumerator<byte> GetEnumerator()
+        public IEnumerator<EmitIntensity> GetEnumerator()
         {
-            return (IEnumerator<byte>)_buffer.GetEnumerator();
+            foreach (var e in _buffer)
+                yield return e;
         }
 
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+
+        [ExcludeFromCodeCoverage] System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
     public static class CacheModulationExtensions

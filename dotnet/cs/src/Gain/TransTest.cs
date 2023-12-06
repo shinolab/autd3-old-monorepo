@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/12/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -37,16 +37,16 @@ namespace AUTD3Sharp.Gain
 
         public TransducerTest(Func<Device, Transducer, Drive?> f)
         {
+            var nullDrive = new Drive(new Phase(0x00), 0x00);
             unsafe
             {
                 _f = (context, geometryPtr, devIdx, trIdx, raw) =>
                 {
                     var dev = new Device((int)devIdx, NativeMethodsBase.AUTDDevice(geometryPtr, devIdx));
                     var tr = new Transducer(trIdx, dev.Ptr);
-                    var d = f(dev, tr);
-                    if (d == null) return;
-                    raw->Phase = d?.Phase.Value ?? 0;
-                    raw->intensity = d?.Intensity.Value ?? 0;
+                    var d = f(dev, tr) ?? nullDrive;
+                    raw->Phase = d.Phase.Value;
+                    raw->intensity = d.Intensity.Value;
                 };
             }
         }

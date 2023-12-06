@@ -4,7 +4,7 @@
  * Created Date: 08/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/12/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,6 +17,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 using AUTD3Sharp.NativeMethods;
 
 #if UNITY_2018_3_OR_NEWER
@@ -89,13 +90,12 @@ namespace AUTD3Sharp
         {
             get
             {
-                var center = new float_t[3];
                 unsafe
                 {
-                    fixed (float_t* p = center)
-                        NativeMethodsBase.AUTDDeviceCenter(Ptr, p);
+                    float_t* center = stackalloc float_t[3];
+                    NativeMethodsBase.AUTDDeviceCenter(Ptr, center);
+                    return new Vector3(center[0], center[1], center[2]);
                 }
-                return new Vector3(center[0], center[1], center[2]);
             }
         }
 
@@ -148,7 +148,6 @@ namespace AUTD3Sharp
         public Transducer this[int index] => _transducers[index];
 
         public IEnumerator<Transducer> GetEnumerator() => _transducers.GetEnumerator();
-
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+        [ExcludeFromCodeCoverage] System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

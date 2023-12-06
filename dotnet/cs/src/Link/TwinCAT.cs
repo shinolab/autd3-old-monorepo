@@ -4,7 +4,7 @@
  * Created Date: 20/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -45,7 +45,7 @@ namespace AUTD3Sharp.Link
 
             TwinCAT ILinkBuilder<TwinCAT>.ResolveLink(LinkPtr ptr)
             {
-                return new TwinCAT ();
+                return new TwinCAT();
             }
         }
 
@@ -74,17 +74,9 @@ namespace AUTD3Sharp.Link
                 var serverAmsNetIdBytes = System.Text.Encoding.UTF8.GetBytes(serverAmsNetId);
                 unsafe
                 {
-                    fixed (byte* ap = serverAmsNetIdBytes)
+                    fixed (byte* ap = &serverAmsNetIdBytes[0])
                     {
-                        var res = NativeMethodsLinkTwinCAT.AUTDLinkRemoteTwinCAT(ap);
-                        if (res.result.Item1 == IntPtr.Zero)
-                        {
-                            var err = new byte[res.err_len];
-                            fixed (byte* ep = err)
-                                NativeMethodsDef.AUTDGetErr(res.err, ep);
-                            throw new AUTDException(err);
-                        }
-                        _ptr = res.result;
+                        _ptr = NativeMethodsLinkTwinCAT.AUTDLinkRemoteTwinCAT(ap).Validate();
                     }
                 }
             }
@@ -99,7 +91,7 @@ namespace AUTD3Sharp.Link
                 var serverIpBytes = serverIp.GetAddressBytes();
                 unsafe
                 {
-                    fixed (byte* ap = serverIpBytes)
+                    fixed (byte* ap = &serverIpBytes[0])
                         _ptr = NativeMethodsLinkTwinCAT.AUTDLinkRemoteTwinCATWithServerIP(_ptr, ap);
                 }
 
@@ -116,7 +108,7 @@ namespace AUTD3Sharp.Link
                 var clientAmsNetIdBytes = System.Text.Encoding.UTF8.GetBytes(clientAmsNetId);
                 unsafe
                 {
-                    fixed (byte* ap = clientAmsNetIdBytes)
+                    fixed (byte* ap = &clientAmsNetIdBytes[0])
                         _ptr = NativeMethodsLinkTwinCAT.AUTDLinkRemoteTwinCATWithClientAmsNetId(_ptr, ap);
                 }
                 return this;
@@ -135,7 +127,7 @@ namespace AUTD3Sharp.Link
 
             RemoteTwinCAT ILinkBuilder<RemoteTwinCAT>.ResolveLink(LinkPtr ptr)
             {
-                return new RemoteTwinCAT ();
+                return new RemoteTwinCAT();
             }
         }
 

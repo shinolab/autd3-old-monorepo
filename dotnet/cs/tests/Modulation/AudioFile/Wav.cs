@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/11/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -109,6 +109,14 @@ public class WavTest
                 99};
             Assert.Equal(modExpect, mod);
             Assert.Equal(5120u, autd.Link.ModulationFrequencyDivision(dev.Idx));
+        }
+
+        var m = new Wav("sin150.wav").WithSamplingConfig(SamplingConfiguration.FromFrequencyDivision(512));
+        Assert.Equal(SamplingConfiguration.FromFrequencyDivision(512), m.SamplingConfiguration);
+        Assert.True(await autd.SendAsync(m));
+        foreach (var dev in autd.Geometry)
+        {
+            Assert.Equal(512u, autd.Link.ModulationFrequencyDivision(dev.Idx));
         }
     }
 }
