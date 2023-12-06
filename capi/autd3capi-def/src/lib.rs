@@ -32,8 +32,8 @@ pub use autd3_driver::{
 pub use custom::{CustomGain, CustomModulation};
 pub use drive::*;
 pub use dynamic_datagram::{
-    DynamicConfigureDebugOutputIdx, DynamicConfigureModDelay, DynamicDatagram, DynamicDatagramPack,
-    DynamicDatagramPack2,
+    DynamicConfigureDebugOutputIdx, DynamicConfigureForceFan, DynamicConfigureModDelay,
+    DynamicConfigureReadsFPGAInfo, DynamicDatagram, DynamicDatagramPack, DynamicDatagramPack2,
 };
 pub use dynamic_link::DynamicLinkBuilder;
 pub use libc::c_void;

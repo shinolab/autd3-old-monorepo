@@ -327,16 +327,6 @@ class Device:
         Base().device_center(self._ptr, vp)
         return v
 
-    def _force_fan(self: "Device", value: bool) -> None:  # noqa: FBT001
-        return Base().device_set_force_fan(self._ptr, value)
-
-    force_fan = property(None, _force_fan)
-
-    def _reads_fpga_info(self: "Device", value: bool) -> None:  # noqa: FBT001
-        Base().device_set_reads_fpga_info(self._ptr, value)
-
-    reads_fpga_info = property(None, _reads_fpga_info)
-
     def translate(self: "Device", t: ArrayLike) -> None:
         """Translate all transducers in the device.
 

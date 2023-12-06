@@ -167,12 +167,6 @@ pub unsafe extern "C" fn AUTDDatagramClear() -> DatagramPtr {
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDDatagramUpdateFlags() -> DatagramPtr {
-    DatagramPtr::new(UpdateFlags::new())
-}
-
-#[no_mangle]
-#[must_use]
 pub unsafe extern "C" fn AUTDDatagramStop() -> DatagramSpecialPtr {
     DatagramSpecialPtr::new(Stop::new())
 }
@@ -216,6 +210,44 @@ pub unsafe extern "C" fn AUTDDatagramConfigureDebugOutputIdx(
         unsafe extern "C" fn(ConstPtr, geometry: GeometryPtr, u32) -> u8,
     >(f);
     DatagramPtr::new(DynamicConfigureDebugOutputIdx::new(
+        geo.devices()
+            .map(move |dev| (dev.idx(), f(context, geometry, dev.idx() as u32)))
+            .collect(),
+    ))
+}
+
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDDatagramConfigureForceFan(
+    f: ConstPtr,
+    context: ConstPtr,
+    geometry: GeometryPtr,
+) -> DatagramPtr {
+    let geo = cast!(geometry.0, Geometry);
+    let f = std::mem::transmute::<
+        _,
+        unsafe extern "C" fn(ConstPtr, geometry: GeometryPtr, u32) -> bool,
+    >(f);
+    DatagramPtr::new(DynamicConfigureForceFan::new(
+        geo.devices()
+            .map(move |dev| (dev.idx(), f(context, geometry, dev.idx() as u32)))
+            .collect(),
+    ))
+}
+
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDDatagramConfigureReadsFPGAInfo(
+    f: ConstPtr,
+    context: ConstPtr,
+    geometry: GeometryPtr,
+) -> DatagramPtr {
+    let geo = cast!(geometry.0, Geometry);
+    let f = std::mem::transmute::<
+        _,
+        unsafe extern "C" fn(ConstPtr, geometry: GeometryPtr, u32) -> bool,
+    >(f);
+    DatagramPtr::new(DynamicConfigureReadsFPGAInfo::new(
         geo.devices()
             .map(move |dev| (dev.idx(), f(context, geometry, dev.idx() as u32)))
             .collect(),
