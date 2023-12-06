@@ -12,5 +12,3 @@ const auto r = autd3::Quaternion(1., 0., 0., 0.);
 dev.translate(t);
 dev.rotate(r);
 dev.affine(t, r);
-dev.force_fan(true);
-dev.reads_fpga_info(true);

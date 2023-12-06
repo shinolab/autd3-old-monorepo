@@ -128,7 +128,7 @@ mod tests {
     fn test_cache() {
         let geometry: Geometry = Geometry::new(vec![AUTD3::new(Vector3::zeros()).into_device(0)]);
 
-        let mut gain = Plane::new(Vector3::zeros()).with_cache();
+        let gain = Plane::new(Vector3::zeros()).with_cache();
 
         let d = gain.calc(&geometry, GainFilter::All).unwrap();
         d[&0].iter().for_each(|drive| {
