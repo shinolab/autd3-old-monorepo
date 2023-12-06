@@ -96,6 +96,7 @@ typedef struct {
 static volatile uint8_t _ack = 0;
 static volatile uint8_t _rx_data = 0;
 static volatile bool_t _read_fpga_info;
+static volatile bool_t _read_fpga_info_store;
 
 static volatile uint32_t _mod_cycle = 0;
 
@@ -489,27 +490,21 @@ void handle_payload(uint8_t tag, const volatile uint8_t* p_data) {
     case TAG_FIRM_INFO:
       switch (p_data[1]) {
         case INFO_TYPE_CPU_VERSION_MAJOR:
+          _read_fpga_info_store = _read_fpga_info;
           _read_fpga_info = false;
           _rx_data = get_cpu_version() & 0xFF;
           break;
         case INFO_TYPE_CPU_VERSION_MINOR:
-          _read_fpga_info = false;
           _rx_data = get_cpu_version_minor() & 0xFF;
           break;
         case INFO_TYPE_FPGA_VERSION_MAJOR:
-          _read_fpga_info = false;
           _rx_data = get_fpga_version() & 0xFF;
           break;
         case INFO_TYPE_FPGA_VERSION_MINOR:
-          _read_fpga_info = false;
           _rx_data = get_fpga_version_minor() & 0xFF;
           break;
         case INFO_TYPE_CLEAR:
-          if (_read_fpga_info) {
-            _rx_data = read_fpga_info();
-          } else {
-            _rx_data = 0;
-          }
+          _read_fpga_info = _read_fpga_info_store;
           break;
       }
       break;
@@ -559,17 +554,11 @@ void update(void) {
     _wdt_cnt = WDT_CNT_MAX;
   }
 
-  if (_read_fpga_info) {
-    _rx_data = read_fpga_info();
-  }
-
   if (pop(&_data)) {
     p_data = (volatile uint8_t*)&_data;
     header = (Header*)p_data;
     _ack = header->msg_id;
 
-    _read_fpga_info = (header->fpga_ctl_flag & READS_FPGA_INFO) == READS_FPGA_INFO;
-    if (_read_fpga_info) _rx_data = read_fpga_info();
     _fpga_flags = header->fpga_ctl_flag;
 
     handle_payload(p_data[sizeof(Header)], &p_data[sizeof(Header)]);
@@ -583,6 +572,7 @@ void update(void) {
     dly_tsk(1);
   }
 
+  _rx_data = _read_fpga_info ? read_fpga_info() : 0;
   _sTx.ack = (((uint16_t)_ack) << 8) | _rx_data;
 }
 
