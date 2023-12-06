@@ -82,14 +82,9 @@ extern void init_app(void);
 // fire periodically with 1ms interval
 extern void update(void);
 
-typedef enum {
-  FORCE_FAN = 1 << CTL_FLAG_FORCE_FAN_BIT,
-  READS_FPGA_INFO = 1 << CTL_FLAG_READS_FPGA_INFO_BIT,
-} FPGAControlFlags;
-
 typedef struct {
   uint8_t msg_id;
-  uint8_t fpga_ctl_flag;
+  uint8_t _fpga_ctl_flag;  // only used before v4.1.0
   uint16_t slot_2_offset;
 } Header;
 
@@ -103,7 +98,6 @@ static volatile uint32_t _mod_cycle = 0;
 static volatile uint32_t _stm_cycle = 0;
 static volatile uint16_t _gain_stm_mode = GAIN_STM_MODE_INTENSITY_PHASE_FULL;
 
-static volatile uint8_t _fpga_flags = 0;
 static volatile uint16_t _fpga_flags_internal = 0;
 
 static volatile short _wdt_cnt = WDT_CNT_MAX;
@@ -124,7 +118,7 @@ void synchronize() {
 
   next_sync0 = get_next_sync0();
   bram_cpy_volatile(BRAM_SELECT_CONTROLLER, BRAM_ADDR_EC_SYNC_TIME_0, (volatile uint16_t*)&next_sync0, sizeof(uint64_t) >> 1);
-  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG, _fpga_flags_internal | _fpga_flags | CTL_FLAG_SYNC);
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG, _fpga_flags_internal | CTL_FLAG_SYNC);
 
   while (true) {
     flag = bram_read(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG);
@@ -447,9 +441,8 @@ static void clear(void) {
 
   _read_fpga_info = false;
 
-  _fpga_flags = 0;
   _fpga_flags_internal = 0;
-  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG, _fpga_flags_internal | _fpga_flags);
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG, _fpga_flags_internal);
 
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_INTENSITY_STEP, 256);
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_PHASE_STEP, 256);
@@ -505,6 +498,7 @@ void handle_payload(uint8_t tag, const volatile uint8_t* p_data) {
           break;
         case INFO_TYPE_CLEAR:
           _read_fpga_info = _read_fpga_info_store;
+          _rx_data = 0;
           break;
       }
       break;
@@ -559,20 +553,18 @@ void update(void) {
     header = (Header*)p_data;
     _ack = header->msg_id;
 
-    _fpga_flags = header->fpga_ctl_flag;
-
     handle_payload(p_data[sizeof(Header)], &p_data[sizeof(Header)]);
 
     if (header->slot_2_offset != 0) {
       handle_payload(p_data[sizeof(Header) + header->slot_2_offset], &p_data[sizeof(Header) + header->slot_2_offset]);
     }
 
-    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG, _fpga_flags_internal | _fpga_flags);
+    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG, _fpga_flags_internal);
   } else {
     dly_tsk(1);
   }
 
-  _rx_data = _read_fpga_info ? read_fpga_info() : 0;
+  if (_read_fpga_info) _rx_data = read_fpga_info();
   _sTx.ack = (((uint16_t)_ack) << 8) | _rx_data;
 }
 
