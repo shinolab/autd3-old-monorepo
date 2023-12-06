@@ -12,21 +12,16 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 """
 
 
-import asyncio
 import threading
 
-from pyautd3 import Controller, UpdateFlags
+from pyautd3 import ConfigureForceFan, ConfigureReadsFPGAInfo, Controller
 
 
 async def flag(autd: Controller) -> None:
-    for dev in autd.geometry:
-        dev.force_fan = True
-        dev.reads_fpga_info = True
-
     print("press any key to run fan...")
     _ = input()
 
-    await autd.send_async(UpdateFlags())
+    await autd.send_async(ConfigureReadsFPGAInfo(lambda _: True), ConfigureForceFan(lambda _: True))
 
     fin = False
 
@@ -50,9 +45,4 @@ async def flag(autd: Controller) -> None:
     print("\x1b[1F\x1b[0J")
 
     th.join()
-
-    for dev in autd.geometry:
-        dev.force_fan = False
-        dev.reads_fpga_info = False
-
-    await autd.send_async(UpdateFlags())
+    await autd.send_async(ConfigureReadsFPGAInfo(lambda _: False), ConfigureForceFan(lambda _: False))

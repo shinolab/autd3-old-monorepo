@@ -116,12 +116,6 @@ pub unsafe extern "C" fn AUTDLinkAuditCpuRxData(audit: LinkPtr, idx: u32) -> u8 
 }
 
 #[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDLinkAuditCpuFpgaFlags(audit: LinkPtr, idx: u32) -> u8 {
-    cast!(audit.0, Box<Audit>)[idx as usize].fpga_flags().bits()
-}
-
-#[no_mangle]
 pub unsafe extern "C" fn AUTDLinkAuditFpgaAssertThermalSensor(audit: LinkPtr, idx: u32) {
     cast_mut!(audit.0, Box<Audit>)[idx as usize]
         .fpga_mut()

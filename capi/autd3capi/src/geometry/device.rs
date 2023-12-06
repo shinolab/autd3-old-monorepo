@@ -99,16 +99,6 @@ pub unsafe extern "C" fn AUTDDeviceAffine(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDDeviceSetReadsFPGAInfo(dev: DevicePtr, value: bool) {
-    cast_mut!(dev.0, Device).reads_fpga_info = value;
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn AUTDDeviceSetForceFan(dev: DevicePtr, value: bool) {
-    cast_mut!(dev.0, Device).force_fan = value;
-}
-
-#[no_mangle]
 pub unsafe extern "C" fn AUTDDeviceEnableSet(dev: DevicePtr, value: bool) {
     cast_mut!(dev.0, Device).enable = value;
 }

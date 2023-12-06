@@ -14,10 +14,10 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 import asyncio
 
+from samples import runner
+
 from pyautd3 import AUTD3, Controller
 from pyautd3.link.soem import RemoteSOEM
-
-from .samples import runner
 
 
 async def main() -> None:

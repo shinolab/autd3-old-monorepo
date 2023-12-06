@@ -12,7 +12,18 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 """
 
 
-from pyautd3.autd import Clear, ConfigureDebugOutputIdx, ConfigureModDelay, Controller, FirmwareInfo, Silencer, Stop, Synchronize, UpdateFlags
+from pyautd3.autd import (
+    Clear,
+    ConfigureDebugOutputIdx,
+    ConfigureForceFan,
+    ConfigureModDelay,
+    ConfigureReadsFPGAInfo,
+    Controller,
+    FirmwareInfo,
+    Silencer,
+    Stop,
+    Synchronize,
+)
 from pyautd3.drive import Drive
 from pyautd3.emit_intensity import EmitIntensity
 from pyautd3.geometry import AUTD3, Device, Geometry, Transducer
@@ -33,12 +44,13 @@ __all__ = [
     "Drive",
     "FirmwareInfo",
     "Clear",
-    "UpdateFlags",
     "Synchronize",
     "ConfigureModDelay",
     "Stop",
     "TimerStrategy",
     "ConfigureDebugOutputIdx",
+    "ConfigureReadsFPGAInfo",
+    "ConfigureForceFan",
 ]
 
 __version__ = "18.0.1"
