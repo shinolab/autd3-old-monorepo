@@ -69,6 +69,11 @@ namespace AUTD3Sharp.Link
             return NativeMethodsBase.AUTDLinkAuditIsOpen(_ptr);
         }
 
+        public bool IsForceFan(int idx)
+        {
+            return NativeMethodsBase.AUTDLinkAuditFpgaIsForceFan(_ptr, (uint)idx);
+        }
+
         public ulong LastTimeoutNs()
         {
             return NativeMethodsBase.AUTDLinkAuditLastTimeoutNs(_ptr);
@@ -82,11 +87,6 @@ namespace AUTD3Sharp.Link
         public void Update(int idx)
         {
             NativeMethodsBase.AUTDLinkAuditCpuUpdate(_ptr, (uint)idx);
-        }
-
-        public int FpgaFlags(int idx)
-        {
-            return NativeMethodsBase.AUTDLinkAuditCpuFpgaFlags(_ptr, (uint)idx);
         }
 
         public ushort SilencerStepIntensity(int idx)

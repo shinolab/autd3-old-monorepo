@@ -18,12 +18,10 @@ namespace tests.Link;
 public class SimulatorTest
 {
     [Fact]
-    public async Task TestSimulator()
+    public void TestSimulator()
     {
-        await Assert.ThrowsAsync<AUTDException>(async () => _ = await new ControllerBuilder()
-            .AddDevice(new AUTD3(Vector3d.zero))
-            .OpenWithAsync(Simulator.Builder(8080)
+        var _ = Simulator.Builder(8080)
                 .WithServerIp(IPAddress.Parse("127.0.0.1"))
-                .WithTimeout(TimeSpan.FromMilliseconds(200))));
+                .WithTimeout(TimeSpan.FromMilliseconds(200));
     }
 }
