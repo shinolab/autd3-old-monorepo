@@ -4,15 +4,15 @@
  * Created Date: 07/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/12/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
-pub const VERSION_NUM_MAJOR: u8 = 0x8B;
-pub const VERSION_NUM_MINOR: u8 = 0x01;
+pub const VERSION_NUM_MAJOR: u8 = 0x8C;
+pub const VERSION_NUM_MINOR: u8 = 0x00;
 
 pub const BRAM_SELECT_CONTROLLER: u16 = 0x0;
 pub const BRAM_SELECT_MOD: u16 = 0x1;
@@ -51,6 +51,7 @@ pub const CTL_REG_OP_MODE_BIT: u16 = 9;
 pub const CTL_REG_STM_GAIN_MODE_BIT: u16 = 10;
 pub const CTL_FLAG_USE_STM_FINISH_IDX_BIT: u16 = 11;
 pub const CTL_FLAG_USE_STM_START_IDX_BIT: u16 = 12;
+pub const CTL_REG_FORCE_FAN_EX_BIT: u16 = 13;
 
 pub const ENABLED_EMULATOR_BIT: u8 = 0x80;
 pub const ENABLED_FEATURES_BITS: u8 = ENABLED_EMULATOR_BIT;
