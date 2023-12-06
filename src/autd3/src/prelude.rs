@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/12/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -29,8 +29,9 @@ pub use autd3_driver::{
     common::Rad as PhaseRad,
     common::{Drive, EmitIntensity, Phase, SamplingConfiguration},
     datagram::{
-        Clear, ConfigureDebugOutputIdx, ConfigureModDelay, DatagramT, FocusSTM, GainSTM,
-        Modulation, ModulationProperty, Silencer, Stop, Synchronize, UpdateFlags,
+        Clear, ConfigureDebugOutputIdx, ConfigureForceFan, ConfigureModDelay,
+        ConfigureReadsFPGAInfo, DatagramT, FocusSTM, GainSTM, Modulation, ModulationProperty,
+        Silencer, Stop, Synchronize,
     },
     defined::{float, METER, MILLIMETER, PI},
     error::AUTDInternalError,

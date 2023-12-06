@@ -4,17 +4,14 @@
  * Created Date: 06/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/12/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3_driver::{
-    cpu::{Header, TxDatagram},
-    fpga::FPGAControlFlags,
-};
+use autd3_driver::cpu::{Header, TxDatagram};
 
 use crate::fpga::emulator::FPGAEmulator;
 
@@ -25,13 +22,13 @@ pub struct CPUEmulator {
     ack: u8,
     rx_data: u8,
     read_fpga_info: bool,
+    read_fpga_info_store: bool,
     mod_cycle: u32,
     stm_cycle: u32,
     gain_stm_mode: u16,
     fpga: FPGAEmulator,
     synchronized: bool,
     num_transducers: usize,
-    fpga_flags: FPGAControlFlags,
     fpga_flags_internal: u16,
 }
 
@@ -42,13 +39,13 @@ impl CPUEmulator {
             ack: 0x00,
             rx_data: 0x00,
             read_fpga_info: false,
+            read_fpga_info_store: false,
             mod_cycle: 0,
             stm_cycle: 0,
             gain_stm_mode: 0,
             fpga: FPGAEmulator::new(num_transducers),
             synchronized: false,
             num_transducers,
-            fpga_flags: FPGAControlFlags::NONE,
             fpga_flags_internal: 0x0000,
         };
         s.init();
@@ -69,10 +66,6 @@ impl CPUEmulator {
 
     pub fn rx_data(&self) -> u8 {
         self.rx_data
-    }
-
-    pub fn fpga_flags(&self) -> FPGAControlFlags {
-        self.fpga_flags
     }
 
     pub fn fpga(&self) -> &FPGAEmulator {
@@ -539,15 +532,28 @@ impl CPUEmulator {
         self.bram_read(BRAM_SELECT_CONTROLLER, BRAM_ADDR_FPGA_INFO)
     }
 
+    fn configure_force_fan(&mut self, data: &[u8]) {
+        if data[0] != 0x00 {
+            self.fpga_flags_internal |= CTL_FLAG_FORCE_FAN;
+        } else {
+            self.fpga_flags_internal &= !CTL_FLAG_FORCE_FAN;
+        }
+    }
+
+    fn configure_reads_fpga_info(&mut self, data: &[u8]) {
+        self.read_fpga_info = data[0] != 0x00;
+    }
+
     fn clear(&mut self) {
         let freq_div_4k = 5120;
 
+        self.read_fpga_info = false;
+
         self.fpga_flags_internal = 0x0000;
-        self.fpga_flags = FPGAControlFlags::NONE;
         self.bram_write(
             BRAM_SELECT_CONTROLLER,
             BRAM_ADDR_CTL_REG,
-            self.fpga_flags_internal | self.fpga_flags.bits() as u16,
+            self.fpga_flags_internal,
         );
 
         self.bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_STEP_INTENSITY, 256);
@@ -589,31 +595,24 @@ impl CPUEmulator {
             TAG_SYNC => self.synchronize(),
             TAG_FIRM_INFO => match data[1] {
                 INFO_TYPE_CPU_VERSION_MAJOR => {
+                    self.read_fpga_info_store = self.read_fpga_info;
                     self.read_fpga_info = false;
                     self.rx_data = (self.get_cpu_version() & 0xFF) as _;
                 }
                 INFO_TYPE_CPU_VERSION_MINOR => {
-                    self.read_fpga_info = false;
                     self.rx_data = (self.get_cpu_version_minor() & 0xFF) as _;
                 }
                 INFO_TYPE_FPGA_VERSION_MAJOR => {
-                    self.read_fpga_info = false;
                     self.rx_data = (self.get_fpga_version() & 0xFF) as _;
                 }
                 INFO_TYPE_FPGA_VERSION_MINOR => {
-                    self.read_fpga_info = false;
                     self.rx_data = (self.get_fpga_version_minor() & 0xFF) as _;
                 }
                 INFO_TYPE_FPGA_FUNCTIONS => {
-                    self.read_fpga_info = false;
                     self.rx_data = ((self.get_fpga_version() >> 8) & 0xFF) as _;
                 }
                 INFO_TYPE_CLEAR => {
-                    self.rx_data = if self.read_fpga_info {
-                        self.read_fpga_info() as _
-                    } else {
-                        0
-                    };
+                    self.read_fpga_info = self.read_fpga_info_store;
                 }
                 _ => {
                     unimplemented!("Unsupported firmware info type")
@@ -626,6 +625,8 @@ impl CPUEmulator {
             TAG_GAIN => self.write_gain(data),
             TAG_FOCUS_STM => self.write_focus_stm(data),
             TAG_GAIN_STM => self.write_gain_stm(data),
+            TAG_FORCE_FAN => self.configure_force_fan(&data[2..]),
+            TAG_READS_FPGA_INFO => self.configure_reads_fpga_info(&data[2..]),
             TAG_DEBUG => self.config_debug(&data[2..]),
             _ => {
                 unimplemented!("Unsupported tag")
@@ -639,13 +640,6 @@ impl CPUEmulator {
         if self.ack == header.msg_id {
             return;
         }
-
-        if header.fpga_flag.contains(FPGAControlFlags::READS_FPGA_INFO) {
-            self.read_fpga_info = true;
-            self.rx_data = self.read_fpga_info() as _;
-        }
-
-        self.fpga_flags = header.fpga_flag;
 
         self.handle_payload(
             data[std::mem::size_of::<Header>()],
@@ -662,9 +656,12 @@ impl CPUEmulator {
         self.bram_write(
             BRAM_SELECT_CONTROLLER,
             BRAM_ADDR_CTL_REG,
-            self.fpga_flags_internal | self.fpga_flags.bits() as u16,
+            self.fpga_flags_internal,
         );
 
+        if self.read_fpga_info {
+            self.rx_data = self.read_fpga_info() as _;
+        }
         self.ack = header.msg_id;
     }
 }
