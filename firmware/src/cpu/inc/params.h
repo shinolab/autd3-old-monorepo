@@ -72,6 +72,7 @@
 #define TAG_FOCUS_STM (0x40)
 #define TAG_GAIN_STM (0x50)
 #define TAG_FORCE_FAN (0x60)
+#define TAG_READS_FPGA_INFO (0x61)
 #define TAG_DEBUG (0xF0)
 
 #define INFO_TYPE_CPU_VERSION_MAJOR (0x01)
