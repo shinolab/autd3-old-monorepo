@@ -4,7 +4,7 @@
  * Created Date: 07/11/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -47,21 +47,20 @@ namespace AUTD3Sharp
         DC = 1,
     }
 
-    public static class SyncModeExt
-    {
-        public static NativeMethods.SyncMode Into(this SyncMode mode)
-        {
-            return mode switch
-            {
-                SyncMode.FreeRun => NativeMethods.SyncMode.FreeRun,
-                SyncMode.DC => NativeMethods.SyncMode.DC,
-                _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
-            };
-        }
-    }
-
     namespace NativeMethods
     {
+        public static class SyncModeExt
+        {
+            public static SyncMode Into(this AUTD3Sharp.SyncMode mode)
+            {
+                return mode switch
+                {
+                    AUTD3Sharp.SyncMode.FreeRun => SyncMode.FreeRun,
+                    AUTD3Sharp.SyncMode.DC => SyncMode.DC,
+                    _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
+                };
+            }
+        }
 
         public static partial class NativeMethodsDef
         {
@@ -240,7 +239,62 @@ namespace AUTD3Sharp
                 var err = new byte[res.err_len];
                 unsafe
                 {
-                    fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
+                    fixed (byte* p = &err[0]) NativeMethodsDef.AUTDGetErr(res.err, p);
+                }
+                throw new AUTDException(err);
+            }
+
+            public static ControllerPtr Validate(this ResultController res)
+            {
+                if (res.result.Item1 != IntPtr.Zero) return res.result;
+                var err = new byte[res.err_len];
+                unsafe
+                {
+                    fixed (byte* p = &err[0]) NativeMethodsDef.AUTDGetErr(res.err, p);
+                }
+                throw new AUTDException(err);
+            }
+
+            public static LinkSimulatorBuilderPtr Validate(this ResultLinkSimulatorBuilder res)
+            {
+                if (res.result.Item1 != IntPtr.Zero) return res.result;
+                var err = new byte[res.err_len];
+                unsafe
+                {
+                    fixed (byte* p = &err[0]) NativeMethodsDef.AUTDGetErr(res.err, p);
+                }
+                throw new AUTDException(err);
+            }
+
+            public static LinkRemoteSOEMBuilderPtr Validate(this ResultLinkRemoteSOEMBuilder res)
+            {
+                if (res.result.Item1 != IntPtr.Zero) return res.result;
+                var err = new byte[res.err_len];
+                unsafe
+                {
+                    fixed (byte* p = &err[0]) NativeMethodsDef.AUTDGetErr(res.err, p);
+                }
+                throw new AUTDException(err);
+            }
+
+            public static LinkRemoteTwinCATBuilderPtr Validate(this ResultLinkRemoteTwinCATBuilder res)
+            {
+                if (res.result.Item1 != IntPtr.Zero) return res.result;
+                var err = new byte[res.err_len];
+                unsafe
+                {
+                    fixed (byte* p = &err[0]) NativeMethodsDef.AUTDGetErr(res.err, p);
+                }
+                throw new AUTDException(err);
+            }
+
+            public static ModulationPtr Validate(this ResultModulation res)
+            {
+                if (res.result.Item1 != IntPtr.Zero) return res.result;
+                var err = new byte[res.err_len];
+                unsafe
+                {
+                    fixed (byte* p = &err[0]) NativeMethodsDef.AUTDGetErr(res.err, p);
                 }
                 throw new AUTDException(err);
             }
@@ -251,7 +305,7 @@ namespace AUTD3Sharp
                 var err = new byte[res.err_len];
                 unsafe
                 {
-                    fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
+                    fixed (byte* p = &err[0]) NativeMethodsDef.AUTDGetErr(res.err, p);
                 }
                 throw new AUTDException(err);
             }
@@ -262,7 +316,7 @@ namespace AUTD3Sharp
                 var err = new byte[res.err_len];
                 unsafe
                 {
-                    fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
+                    fixed (byte* p = &err[0]) NativeMethodsDef.AUTDGetErr(res.err, p);
                 }
                 throw new AUTDException(err);
             }
@@ -273,7 +327,7 @@ namespace AUTD3Sharp
                 var err = new byte[res.err_len];
                 unsafe
                 {
-                    fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
+                    fixed (byte* p = &err[0]) NativeMethodsDef.AUTDGetErr(res.err, p);
                 }
                 throw new AUTDException(err);
             }
@@ -284,7 +338,7 @@ namespace AUTD3Sharp
                 var err = new byte[res.err_len];
                 unsafe
                 {
-                    fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
+                    fixed (byte* p = &err[0]) NativeMethodsDef.AUTDGetErr(res.err, p);
                 }
                 throw new AUTDException(err);
             }
@@ -295,7 +349,7 @@ namespace AUTD3Sharp
                 var err = new byte[res.err_len];
                 unsafe
                 {
-                    fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
+                    fixed (byte* p = &err[0]) NativeMethodsDef.AUTDGetErr(res.err, p);
                 }
                 throw new AUTDException(err);
             }
@@ -306,7 +360,7 @@ namespace AUTD3Sharp
                 var err = new byte[res.err_len];
                 unsafe
                 {
-                    fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
+                    fixed (byte* p = &err[0]) NativeMethodsDef.AUTDGetErr(res.err, p);
                 }
                 throw new AUTDException(err);
             }
