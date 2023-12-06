@@ -4,7 +4,7 @@
  * Created Date: 07/11/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -240,7 +240,29 @@ namespace AUTD3Sharp
                 var err = new byte[res.err_len];
                 unsafe
                 {
-                    fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
+                    fixed (byte* p = &err[0]) NativeMethodsDef.AUTDGetErr(res.err, p);
+                }
+                throw new AUTDException(err);
+            }
+
+            public static ControllerPtr Validate(this ResultController res)
+            {
+                if (res.result.Item1 != IntPtr.Zero) return res.result;
+                var err = new byte[res.err_len];
+                unsafe
+                {
+                    fixed (byte* p = &err[0]) NativeMethodsDef.AUTDGetErr(res.err, p);
+                }
+                throw new AUTDException(err);
+            }
+
+            public static LinkSimulatorBuilderPtr Validate(this ResultLinkSimulatorBuilder res)
+            {
+                if (res.result.Item1 != IntPtr.Zero) return res.result;
+                var err = new byte[res.err_len];
+                unsafe
+                {
+                    fixed (byte* p = &err[0]) NativeMethodsDef.AUTDGetErr(res.err, p);
                 }
                 throw new AUTDException(err);
             }
@@ -251,7 +273,7 @@ namespace AUTD3Sharp
                 var err = new byte[res.err_len];
                 unsafe
                 {
-                    fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
+                    fixed (byte* p = &err[0]) NativeMethodsDef.AUTDGetErr(res.err, p);
                 }
                 throw new AUTDException(err);
             }
@@ -262,7 +284,7 @@ namespace AUTD3Sharp
                 var err = new byte[res.err_len];
                 unsafe
                 {
-                    fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
+                    fixed (byte* p = &err[0]) NativeMethodsDef.AUTDGetErr(res.err, p);
                 }
                 throw new AUTDException(err);
             }
@@ -273,7 +295,7 @@ namespace AUTD3Sharp
                 var err = new byte[res.err_len];
                 unsafe
                 {
-                    fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
+                    fixed (byte* p = &err[0]) NativeMethodsDef.AUTDGetErr(res.err, p);
                 }
                 throw new AUTDException(err);
             }
@@ -284,7 +306,7 @@ namespace AUTD3Sharp
                 var err = new byte[res.err_len];
                 unsafe
                 {
-                    fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
+                    fixed (byte* p = &err[0]) NativeMethodsDef.AUTDGetErr(res.err, p);
                 }
                 throw new AUTDException(err);
             }
@@ -295,7 +317,7 @@ namespace AUTD3Sharp
                 var err = new byte[res.err_len];
                 unsafe
                 {
-                    fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
+                    fixed (byte* p = &err[0]) NativeMethodsDef.AUTDGetErr(res.err, p);
                 }
                 throw new AUTDException(err);
             }
@@ -306,7 +328,7 @@ namespace AUTD3Sharp
                 var err = new byte[res.err_len];
                 unsafe
                 {
-                    fixed (byte* p = err) NativeMethodsDef.AUTDGetErr(res.err, p);
+                    fixed (byte* p = &err[0]) NativeMethodsDef.AUTDGetErr(res.err, p);
                 }
                 throw new AUTDException(err);
             }
