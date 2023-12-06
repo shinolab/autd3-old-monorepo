@@ -677,6 +677,9 @@ def cs_test(args):
 
     with working_dir("dotnet/cs/tests"):
         command = ["dotnet", "test"]
+        if not config.is_pcap_available():
+            command.append("--filter")
+            command.append("require!=soem")
         subprocess.run(command).check_returncode()
 
 
@@ -705,6 +708,9 @@ def cs_cov(args):
             "--settings",
             "coverlet.runsettings",
         ]
+        if not config.is_pcap_available():
+            command.append("--filter")
+            command.append("require!=soem")
         subprocess.run(command).check_returncode()
 
         if args.html:
