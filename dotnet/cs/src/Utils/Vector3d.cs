@@ -4,7 +4,7 @@
  * Created Date: 02/07/2018
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/06/2022
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2018-2019 Shun Suzuki. All rights reserved.
@@ -15,6 +15,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Diagnostics.CodeAnalysis;
 
 namespace AUTD3Sharp.Utils
 {
@@ -30,7 +31,6 @@ namespace AUTD3Sharp.Utils
 
         public Vector3d(params double[] vector)
         {
-            if (vector == null) throw new ArgumentNullException(nameof(vector));
             if (vector.Length != 3) throw new InvalidCastException();
 
             x = vector[0];
@@ -129,7 +129,7 @@ namespace AUTD3Sharp.Utils
 
         #region util
         public override int GetHashCode() => x.GetHashCode() ^ y.GetHashCode() ^ z.GetHashCode();
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        [ExcludeFromCodeCoverage] IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         public string ToString(string format) => $"3D Column Vector:\n{string.Format(CultureInfo.CurrentCulture, format, x)}\n{string.Format(CultureInfo.CurrentCulture, format, y)}\n{string.Format(CultureInfo.CurrentCulture, format, z)}";
 
         public IEnumerator<double> GetEnumerator()

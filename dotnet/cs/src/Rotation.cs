@@ -4,7 +4,7 @@
  * Created Date: 26/11/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -66,15 +66,12 @@ namespace AUTD3Sharp
     {
         public static Quaternion FromZYZ(Angle z1, Angle y, Angle z2)
         {
-            var rot = new float_t[4];
             unsafe
             {
-                fixed (float_t* p = rot)
-                {
-                    NativeMethodsBase.AUTDRotationFromEulerZYZ(z1.Radian, y.Radian, z2.Radian, p);
-                }
+                float_t* rot = stackalloc float_t[4];
+                NativeMethodsBase.AUTDRotationFromEulerZYZ(z1.Radian, y.Radian, z2.Radian, rot);
+                return new Quaternion(rot[1], rot[2], rot[3], rot[0]);
             }
-            return new Quaternion(rot[1], rot[2], rot[3], rot[0]);
         }
     }
 }

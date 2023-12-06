@@ -4,7 +4,7 @@
  * Created Date: 20/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -51,16 +51,10 @@ namespace AUTD3Sharp.Link
                 var addrBytes = System.Text.Encoding.UTF8.GetBytes(addrStr);
                 unsafe
                 {
-                    fixed (byte* ap = addrBytes)
-                    {
-                        var res = NativeMethodsLinkSimulator.AUTDLinkSimulatorWithAddr(_ptr, ap);
-                        if (res.result.Item1 != IntPtr.Zero) return this;
-                        var err = new byte[res.err_len];
-                        fixed (byte* ep = err)
-                            NativeMethodsDef.AUTDGetErr(res.err, ep);
-                        throw new AUTDException(err);
-                    }
+                    fixed (byte* ap = &addrBytes[0])
+                        _ptr = NativeMethodsLinkSimulator.AUTDLinkSimulatorWithAddr(_ptr, ap).Validate();
                 }
+                return this;
             }
 
             public SimulatorBuilder WithTimeout(TimeSpan timeout)
@@ -90,30 +84,14 @@ namespace AUTD3Sharp.Link
 
         private LinkPtr _ptr = new LinkPtr { Item1 = IntPtr.Zero };
 
-        public async Task UpdateGeometryAsync(Geometry geometry)
+        public async Task<bool> UpdateGeometryAsync(Geometry geometry)
         {
-            var res = await Task.Run(() => NativeMethodsLinkSimulator.AUTDLinkSimulatorUpdateGeometry(_ptr, geometry.Ptr));
-            if (res.result != NativeMethodsDef.AUTD3_ERR) return;
-            var err = new byte[res.err_len];
-            unsafe
-            {
-                fixed (byte* p = err)
-                    NativeMethodsDef.AUTDGetErr(res.err, p);
-                throw new AUTDException(err);
-            }
+            return await Task.Run(() => NativeMethodsLinkSimulator.AUTDLinkSimulatorUpdateGeometry(_ptr, geometry.Ptr).Validate() == NativeMethodsDef.AUTD3_TRUE);
         }
 
-        public void UpdateGeometry(Geometry geometry)
+        public bool UpdateGeometry(Geometry geometry)
         {
-            var res = NativeMethodsLinkSimulator.AUTDLinkSimulatorUpdateGeometry(_ptr, geometry.Ptr);
-            if (res.result != NativeMethodsDef.AUTD3_ERR) return;
-            var err = new byte[res.err_len];
-            unsafe
-            {
-                fixed (byte* p = err)
-                    NativeMethodsDef.AUTDGetErr(res.err, p);
-                throw new AUTDException(err);
-            }
+            return NativeMethodsLinkSimulator.AUTDLinkSimulatorUpdateGeometry(_ptr, geometry.Ptr).Validate() == NativeMethodsDef.AUTD3_TRUE;
         }
     }
 }

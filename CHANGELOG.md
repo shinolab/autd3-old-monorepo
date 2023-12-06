@@ -1,3 +1,7 @@
+# 18.0.2
+
+- Fix [#238](https://github.com/shinolab/autd3/issues/238): [C#] Simulator.WithServerIp causes crash
+
 # 18.0.1
 
 - Fix [#237](https://github.com/shinolab/autd3/issues/237): [C++] USE_SYSTEM_EIGEN option does not work
