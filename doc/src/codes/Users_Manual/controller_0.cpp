@@ -1,4 +1,3 @@
-autd.geometry()[0].reads_fpga_info(true);
-autd.send(autd3::UpdateFlags());
+autd.send(autd3::ConfigureReadsFPGAInfo([](const auto&) { return true; }));
 
 const auto info = autd.fpga_info();

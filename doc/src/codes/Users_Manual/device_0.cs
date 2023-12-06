@@ -9,5 +9,3 @@ var r = new Quaterniond(0, 0, 0, 1);
 dev.Translate(t);
 dev.Rotate(r);
 dev.Affine(t, r);
-dev.ForceFan = true;
-dev.ReadsFPGAInfo = true;

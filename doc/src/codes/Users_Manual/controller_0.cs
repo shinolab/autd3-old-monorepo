@@ -1,4 +1,3 @@
-autd.Geometry[0].ReadsFPGAInfo = true;
-autd.Send(new UpdateFlags());
+autd.Send(new ConfigureReadsFPGAInfo(_ => true));
 
 var info = autd.FPGAInfo;
