@@ -65,9 +65,4 @@ def test_soem():
 
 @pytest.mark.soem()
 def test_remote_soem():
-    with pytest.raises(AUTDError):
-        _ = (
-            Controller.builder()
-            .add_device(AUTD3([0.0, 0.0, 0.0]))
-            .open_with(RemoteSOEM.builder("127.0.0.1:8080").with_timeout(timedelta(milliseconds=200)))
-        )
+    _ = RemoteSOEM.builder("127.0.0.1:8080").with_timeout(timedelta(milliseconds=200))

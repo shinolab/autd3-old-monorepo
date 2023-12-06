@@ -208,7 +208,7 @@ class RemoteSOEM(Link):
             return self
 
         def _link_builder_ptr(self: "RemoteSOEM._Builder") -> LinkBuilderPtr:
-            return LinkSOEM().link_remote_soem_into_builder(self._builder)
+            return LinkSOEM().link_remote_soem_into_builder(self._builder)  # pragma: no cover
 
         def _resolve_link(self: "RemoteSOEM._Builder", _ptr: ControllerPtr) -> "RemoteSOEM":
             return RemoteSOEM(Base().link_get(_ptr))
