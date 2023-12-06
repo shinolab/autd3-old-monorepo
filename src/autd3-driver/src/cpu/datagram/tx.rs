@@ -4,7 +4,7 @@
  * Created Date: 29/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/10/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -80,8 +80,6 @@ impl TxDatagram {
 
 #[cfg(test)]
 mod tests {
-    use crate::fpga::FPGAControlFlags;
-
     use super::*;
 
     #[test]
@@ -138,33 +136,20 @@ mod tests {
         let mut tx = TxDatagram::new(2);
 
         tx.header_mut(0).msg_id = 0x01;
-        tx.header_mut(0).fpga_flag = FPGAControlFlags::FORCE_FAN;
         tx.header_mut(0).slot_2_offset = 0x02;
 
         tx.header_mut(1).msg_id = 0x03;
-        tx.header_mut(1).fpga_flag = FPGAControlFlags::READS_FPGA_INFO;
         tx.header_mut(1).slot_2_offset = 0x04;
 
         let headers = tx.headers().collect::<Vec<_>>();
         assert_eq!(2, headers.len());
         assert_eq!(0x01, headers[0].msg_id);
-        assert_eq!(
-            FPGAControlFlags::FORCE_FAN.bits(),
-            headers[0].fpga_flag.bits()
-        );
         assert_eq!(0x02, headers[0].slot_2_offset);
         assert_eq!(0x03, headers[1].msg_id);
-        assert_eq!(
-            FPGAControlFlags::READS_FPGA_INFO.bits(),
-            headers[1].fpga_flag.bits()
-        );
         assert_eq!(0x04, headers[1].slot_2_offset);
 
         assert_eq!(0x01, tx.all_data()[memoffset::offset_of!(Header, msg_id)]);
-        assert_eq!(
-            FPGAControlFlags::FORCE_FAN.bits(),
-            tx.all_data()[memoffset::offset_of!(Header, fpga_flag)]
-        );
+
         assert_eq!(
             0x02,
             tx.all_data()[memoffset::offset_of!(Header, slot_2_offset)]
@@ -172,10 +157,6 @@ mod tests {
         assert_eq!(
             0x03,
             tx.all_data()[EC_OUTPUT_FRAME_SIZE + memoffset::offset_of!(Header, msg_id)]
-        );
-        assert_eq!(
-            FPGAControlFlags::READS_FPGA_INFO.bits(),
-            tx.all_data()[EC_OUTPUT_FRAME_SIZE + memoffset::offset_of!(Header, fpga_flag)]
         );
         assert_eq!(
             0x04,

@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/12/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,34 +13,35 @@
 
 mod clear;
 mod debug;
+mod force_fan;
 pub mod gain;
 mod info;
 mod mod_delay;
 mod modulation;
 mod null;
+mod reads_fpga_info;
 mod silencer;
 pub mod stm;
 mod stop;
 mod sync;
-mod update_flag;
 
 pub use clear::*;
 pub use debug::*;
+pub use force_fan::*;
 pub use gain::*;
 pub use info::*;
 pub use mod_delay::*;
 pub use modulation::*;
 pub use null::*;
+pub use reads_fpga_info::*;
 pub use silencer::*;
 pub use stm::*;
 pub use stop::*;
 pub use sync::*;
-pub use update_flag::*;
 
 use crate::{
     cpu::TxDatagram,
     error::AUTDInternalError,
-    fpga::FPGAControlFlags,
     geometry::{Device, Geometry},
 };
 
@@ -50,13 +51,14 @@ pub enum TypeTag {
     Clear = 0x01,
     Sync = 0x02,
     FirmwareInfo = 0x03,
-    UpdateFlags = 0x04,
     Modulation = 0x10,
     ConfigureModDelay = 0x11,
     Silencer = 0x20,
     Gain = 0x30,
     FocusSTM = 0x40,
     GainSTM = 0x50,
+    ForceFan = 0x60,
+    ReadsFPGAInfo = 0x61,
     Debug = 0xF0,
 }
 
@@ -132,10 +134,6 @@ impl OperationHandler {
                 _ => {
                     let hedaer = tx.header_mut(dev.idx());
                     hedaer.msg_id = hedaer.msg_id.wrapping_add(1);
-                    let mut f = FPGAControlFlags::NONE;
-                    f.set(FPGAControlFlags::FORCE_FAN, dev.force_fan);
-                    f.set(FPGAControlFlags::READS_FPGA_INFO, dev.reads_fpga_info);
-                    hedaer.fpga_flag = f;
                     hedaer.slot_2_offset = 0;
 
                     let t = tx.payload_mut(dev.idx());
@@ -164,10 +162,6 @@ impl OperationHandler {
     ) -> Result<(), AUTDInternalError> {
         let hedaer = tx.header_mut(dev.idx());
         hedaer.msg_id = hedaer.msg_id.wrapping_add(1);
-        let mut f = FPGAControlFlags::NONE;
-        f.set(FPGAControlFlags::FORCE_FAN, dev.force_fan);
-        f.set(FPGAControlFlags::READS_FPGA_INFO, dev.reads_fpga_info);
-        hedaer.fpga_flag = f;
         hedaer.slot_2_offset = 0;
 
         op.pack(dev, tx.payload_mut(dev.idx()))?;
