@@ -3,7 +3,7 @@
 // Created Date: 08/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/12/2023
+// Last Modified: 05/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -42,9 +42,9 @@ class Device {
   }
 
   ~Device() = default;
-  Device(const Device& v) noexcept = default;
+  Device(const Device& v) noexcept = default;  // LCOV_EXCL_LINE
   Device& operator=(const Device& obj) = default;
-  Device(Device&& obj) = default;
+  Device(Device&& obj) = default;  // LCOV_EXCL_LINE
   Device& operator=(Device&& obj) = default;
 
   /**

@@ -3,7 +3,7 @@
 // Created Date: 12/11/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/12/2023
+// Last Modified: 05/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -33,6 +33,7 @@ class EmitIntensity final {
   [[nodiscard]] uint8_t value() const noexcept { return _value; }
 
   friend EmitIntensity operator/(EmitIntensity&& lhs, const int& rhs) { return EmitIntensity(lhs._value / rhs); }
+  auto operator<=>(const EmitIntensity&) const = default;
 
  private:
   uint8_t _value;
