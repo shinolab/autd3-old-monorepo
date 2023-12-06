@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/12/2023
+// Last Modified: 06/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -11,6 +11,7 @@
 
 #include <gtest/gtest.h>
 
+#include <autd3/datagram/force_fan.hpp>
 #include <autd3/gain/focus.hpp>
 #include <autd3/gain/null.hpp>
 #include <autd3/gain/uniform.hpp>
@@ -45,13 +46,13 @@ TEST(Internal, ControllerSendTimeout) {
                     .open_with_async(autd3::link::Audit::builder().with_timeout(std::chrono::microseconds(0)))
                     .get();
 
-    autd.send_async(autd3::internal::UpdateFlags()).get();
+    autd.send_async(autd3::gain::Null()).get();
     ASSERT_EQ(autd.link().last_timeout_ns(), 0);
 
-    autd.send_async(autd3::internal::UpdateFlags(), std::chrono::microseconds(1)).get();
+    autd.send_async(autd3::gain::Null(), std::chrono::microseconds(1)).get();
     ASSERT_EQ(autd.link().last_timeout_ns(), 1000);
 
-    autd.send_async(autd3::internal::UpdateFlags(), autd3::internal::UpdateFlags(), std::chrono::microseconds(2)).get();
+    autd.send_async(autd3::gain::Null(), autd3::gain::Null(), std::chrono::microseconds(2)).get();
     ASSERT_EQ(autd.link().last_timeout_ns(), 2000);
 
     autd.send_async(autd3::internal::Stop(), std::chrono::microseconds(1)).get();
@@ -65,13 +66,13 @@ TEST(Internal, ControllerSendTimeout) {
                     .open_with_async(autd3::link::Audit::builder().with_timeout(std::chrono::microseconds(10)))
                     .get();
 
-    autd.send_async(autd3::internal::UpdateFlags()).get();
+    autd.send_async(autd3::gain::Null()).get();
     ASSERT_EQ(autd.link().last_timeout_ns(), 10000);
 
-    autd.send_async(autd3::internal::UpdateFlags(), std::chrono::microseconds(1)).get();
+    autd.send_async(autd3::gain::Null(), std::chrono::microseconds(1)).get();
     ASSERT_EQ(autd.link().last_timeout_ns(), 1000);
 
-    autd.send_async(autd3::internal::UpdateFlags(), autd3::internal::UpdateFlags(), std::chrono::microseconds(2)).get();
+    autd.send_async(autd3::gain::Null(), autd3::gain::Null(), std::chrono::microseconds(2)).get();
     ASSERT_EQ(autd.link().last_timeout_ns(), 2000);
 
     autd.send_async(autd3::internal::Stop(), std::chrono::microseconds(1)).get();
@@ -222,4 +223,17 @@ TEST(Internal, ControllerGroupCheckOnlyForEnabled) {
     ASSERT_TRUE(std::ranges::all_of(intensities, [](auto d) { return d == 0x80; }));
     ASSERT_TRUE(std::ranges::all_of(phases, [](auto p) { return p == 0x90; }));
   }
+}
+
+TEST(Internal_Geometry, DeviceForceFan) {
+  auto autd = create_controller();
+  for (auto& dev : autd.geometry()) ASSERT_FALSE(autd.link().is_force_fan(dev.idx()));
+
+  autd.send_async(autd3::datagram::ConfigureForceFan([](const auto& dev) { return dev.idx() == 0; })).get();
+  ASSERT_TRUE(autd.link().is_force_fan(0));
+  ASSERT_FALSE(autd.link().is_force_fan(1));
+
+  autd.send_async(autd3::datagram::ConfigureForceFan([](const auto& dev) { return dev.idx() == 1; })).get();
+  ASSERT_FALSE(autd.link().is_force_fan(0));
+  ASSERT_TRUE(autd.link().is_force_fan(1));
 }

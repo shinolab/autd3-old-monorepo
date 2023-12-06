@@ -3,7 +3,7 @@
 // Created Date: 08/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 05/12/2023
+// Last Modified: 06/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -100,13 +100,6 @@ class Device {
   void set_attenuation(const double value) const { AUTDDeviceSetAttenuation(_ptr, value); }
 
   /**
-   * @brief set force fan flag
-   *
-   * @param value
-   */
-  void force_fan(const bool value) const { AUTDDeviceSetForceFan(_ptr, value); }
-
-  /**
    * @brief get enable flag
    */
   [[nodiscard]] bool enable() const { return AUTDDeviceEnableGet(_ptr); }
@@ -115,13 +108,6 @@ class Device {
    * @brief set enable flag
    */
   void set_enable(const bool value) const { AUTDDeviceEnableSet(_ptr, value); }
-
-  /**
-   * @brief set reads fpga info flag
-   *
-   * @param value
-   */
-  void reads_fpga_info(const bool value) const { AUTDDeviceSetReadsFPGAInfo(_ptr, value); }
 
   void translate(Vector3 t) const { AUTDDeviceTranslate(_ptr, t.x(), t.y(), t.z()); }
 
@@ -133,11 +119,10 @@ class Device {
 
   [[nodiscard]] std::vector<Transducer>::const_iterator cbegin() const noexcept { return _transducers.cbegin(); }
   [[nodiscard]] std::vector<Transducer>::const_iterator cend() const noexcept { return _transducers.cend(); }
-  [[nodiscard]] std::vector<Transducer>::iterator begin() noexcept { return _transducers.begin(); }
-  [[nodiscard]] std::vector<Transducer>::iterator end() noexcept { return _transducers.end(); }
+  [[nodiscard]] std::vector<Transducer>::const_iterator begin() const noexcept { return _transducers.begin(); }
+  [[nodiscard]] std::vector<Transducer>::const_iterator end() const noexcept { return _transducers.end(); }
 
   [[nodiscard]] const Transducer& operator[](const size_t i) const { return _transducers[i]; }
-  [[nodiscard]] Transducer& operator[](const size_t i) { return _transducers[i]; }
 
   [[nodiscard]] native_methods::DevicePtr ptr() const noexcept { return _ptr; }
 
