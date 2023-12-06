@@ -4,7 +4,7 @@
  * Created Date: 20/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -51,16 +51,10 @@ namespace AUTD3Sharp.Link
                 var addrBytes = System.Text.Encoding.UTF8.GetBytes(addrStr);
                 unsafe
                 {
-                    fixed (byte* ap = addrBytes)
-                    {
-                        var res = NativeMethodsLinkSimulator.AUTDLinkSimulatorWithAddr(_ptr, ap);
-                        if (res.result.Item1 != IntPtr.Zero) return this;
-                        var err = new byte[res.err_len];
-                        fixed (byte* ep = err)
-                            NativeMethodsDef.AUTDGetErr(res.err, ep);
-                        throw new AUTDException(err);
-                    }
+                    fixed (byte* ap = &addrBytes[0])
+                        _ptr = NativeMethodsLinkSimulator.AUTDLinkSimulatorWithAddr(_ptr, ap).Validate();
                 }
+                return this;
             }
 
             public SimulatorBuilder WithTimeout(TimeSpan timeout)
