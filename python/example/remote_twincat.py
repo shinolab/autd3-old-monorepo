@@ -14,7 +14,7 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 import asyncio
 
-from samples import runner
+from samples import runner  # type: ignore[import-not-found]
 
 from pyautd3 import AUTD3, Controller
 from pyautd3.link.twincat import RemoteTwinCAT
