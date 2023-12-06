@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/12/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -13,8 +13,8 @@
 
 localparam int NUM_TRANSDUCERS = 249;
 
-localparam bit [7:0] VERSION_NUM = 8'h8B;
-localparam bit [7:0] VERSION_NUM_MINOR = 8'h01;
+localparam bit [7:0] VERSION_NUM = 8'h8C;
+localparam bit [7:0] VERSION_NUM_MINOR = 8'h00;
 
 localparam bit [1:0] BRAM_SELECT_CONTROLLER = 2'h0;
 localparam bit [1:0] BRAM_SELECT_MOD = 2'h1;
@@ -54,4 +54,5 @@ localparam int CTL_FLAG_OP_MODE_BIT = 9;
 localparam int CTL_FLAG_STM_GAIN_MODE_BIT = 10;
 localparam int CTL_FLAG_USE_STM_FINISH_IDX_BIT = 11;
 localparam int CTL_FLAG_USE_STM_START_IDX_BIT = 12;
+localparam int CTL_FLAG_FORCE_FAN_EX_BIT = 13;
 localparam int CTL_FLAG_SYNC_BIT = 15;
