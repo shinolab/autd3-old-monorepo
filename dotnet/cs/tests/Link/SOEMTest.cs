@@ -25,7 +25,7 @@ public class SOEMTest
         _testOutputHelper = testOutputHelper;
     }
 
-    [Fact]
+    [Fact, Trait("require", "soem")]
     public async Task TestSOEM()
     {
         var onLost = new SOEM.OnErrCallbackDelegate(msg =>
@@ -53,7 +53,8 @@ public class SOEMTest
                  .WithTimeout(TimeSpan.FromMilliseconds(200))));
     }
 
-    [Fact]
+
+    [Fact, Trait("require", "soem")]
     public void TestRemoteSOEM()
     {
         var _ = RemoteSOEM.Builder(new IPEndPoint(IPAddress.Parse("172.0.0.1"), 8080))
