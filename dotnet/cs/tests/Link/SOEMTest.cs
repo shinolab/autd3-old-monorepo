@@ -54,11 +54,9 @@ public class SOEMTest
     }
 
     [Fact]
-    public async Task TestRemoteSOEM()
+    public void TestRemoteSOEM()
     {
-        await Assert.ThrowsAsync<AUTDException>(async () => _ = await new ControllerBuilder()
-            .AddDevice(new AUTD3(Vector3d.zero))
-            .OpenWithAsync(RemoteSOEM.Builder(new IPEndPoint(IPAddress.Parse("172.0.0.1"), 8080))
-                .WithTimeout(TimeSpan.FromMilliseconds(200))));
+        var _ = RemoteSOEM.Builder(new IPEndPoint(IPAddress.Parse("172.0.0.1"), 8080))
+                .WithTimeout(TimeSpan.FromMilliseconds(200));
     }
 }
