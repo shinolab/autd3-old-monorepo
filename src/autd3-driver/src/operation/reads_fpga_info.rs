@@ -1,10 +1,10 @@
 /*
- * File: update_flag.rs
+ * File: reads_fpga_info.rs
  * Project: operation
- * Created Date: 05/09/2023
+ * Created Date: 06/12/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -19,20 +19,30 @@ use crate::{
     operation::{Operation, TypeTag},
 };
 
-#[derive(Default)]
-pub struct UpdateFlagsOp {
+pub struct ConfigureReadsFPGAInfoOp<F: Fn(&Device) -> bool> {
     remains: HashMap<usize, usize>,
+    f: F,
 }
 
-impl Operation for UpdateFlagsOp {
+impl<F: Fn(&Device) -> bool> ConfigureReadsFPGAInfoOp<F> {
+    pub fn new(f: F) -> Self {
+        Self {
+            remains: Default::default(),
+            f,
+        }
+    }
+}
+
+impl<F: Fn(&Device) -> bool> Operation for ConfigureReadsFPGAInfoOp<F> {
     fn pack(&mut self, device: &Device, tx: &mut [u8]) -> Result<usize, AUTDInternalError> {
         assert_eq!(self.remains[&device.idx()], 1);
-        tx[0] = TypeTag::UpdateFlags as u8;
-        Ok(2)
+        tx[0] = TypeTag::ReadsFPGAInfo as u8;
+        tx[2] = if (self.f)(device) { 0x01 } else { 0x00 };
+        Ok(4)
     }
 
     fn required_size(&self, _: &Device) -> usize {
-        2
+        4
     }
 
     fn init(&mut self, geometry: &Geometry) -> Result<(), AUTDInternalError> {
@@ -58,25 +68,25 @@ mod tests {
     const NUM_DEVICE: usize = 10;
 
     #[test]
-    fn update_flag_op() {
+    fn force_fan_op() {
         let geometry = create_geometry(NUM_DEVICE, NUM_TRANS_IN_UNIT);
 
-        let mut tx = [0x00u8; 2 * NUM_DEVICE];
+        let mut tx = [0x00u8; 4 * NUM_DEVICE];
 
-        let mut op = UpdateFlagsOp::default();
+        let mut op = ConfigureReadsFPGAInfoOp::new(|dev| dev.idx() == 0);
 
         assert!(op.init(&geometry).is_ok());
 
         geometry
             .devices()
-            .for_each(|dev| assert_eq!(op.required_size(dev), 2));
+            .for_each(|dev| assert_eq!(op.required_size(dev), 4));
 
         geometry
             .devices()
             .for_each(|dev| assert_eq!(op.remains(dev), 1));
 
         geometry.devices().for_each(|dev| {
-            assert!(op.pack(dev, &mut tx[dev.idx() * 2..]).is_ok());
+            assert!(op.pack(dev, &mut tx[dev.idx() * 4..]).is_ok());
             op.commit(dev);
         });
 
@@ -85,7 +95,11 @@ mod tests {
             .for_each(|dev| assert_eq!(op.remains(dev), 0));
 
         geometry.devices().for_each(|dev| {
-            assert_eq!(tx[dev.idx() * 2], TypeTag::UpdateFlags as u8);
+            assert_eq!(tx[dev.idx() * 4], TypeTag::ReadsFPGAInfo as u8);
+            assert_eq!(
+                tx[dev.idx() * 4 + 2],
+                if dev.idx() == 0 { 0x01 } else { 0x00 }
+            );
         });
     }
 }
