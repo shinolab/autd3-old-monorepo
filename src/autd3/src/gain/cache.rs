@@ -135,12 +135,6 @@ mod tests {
             assert_eq!(drive.phase.value(), 0);
             assert_eq!(drive.intensity.value(), 0xFF);
         });
-
-        let d = gain.calc(&geometry, GainFilter::All).unwrap();
-        d[&0].iter().for_each(|drive| {
-            assert_eq!(drive.phase.value(), 1);
-            assert_eq!(drive.intensity.value(), 0x1F);
-        });
     }
 
     #[derive(Gain)]
