@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/12/2023
+// Last Modified: 05/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -34,7 +34,7 @@ class STM {
   STM& operator=(const STM& obj) = default;
   STM(STM&& obj) = default;
   STM& operator=(STM&& obj) = default;
-  virtual ~STM() = default;
+  virtual ~STM() = default;  // LCOV_EXCL_LINE
 
   [[nodiscard]] std::optional<uint16_t> finish_idx() const {
     const auto idx = AUTDSTMPropsFinishIdx(props());
@@ -115,7 +115,7 @@ class FocusSTM final : public STM {
   FocusSTM& operator=(const FocusSTM& obj) = default;
   FocusSTM(FocusSTM&& obj) = default;
   FocusSTM& operator=(FocusSTM&& obj) = default;
-  ~FocusSTM() override = default;
+  ~FocusSTM() override = default;  // LCOV_EXCL_LINE
 
   static FocusSTM from_sampling_config(const SamplingConfiguration config) { return FocusSTM(std::nullopt, std::nullopt, config); }
 
@@ -290,7 +290,7 @@ class GainSTM final : public STM {
   GainSTM& operator=(const GainSTM& obj) = default;
   GainSTM(GainSTM&& obj) = default;
   GainSTM& operator=(GainSTM&& obj) = default;
-  ~GainSTM() override = default;
+  ~GainSTM() override = default;  // LCOV_EXCL_LINE
 
   /**
    * @brief Constructor

@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/12/2023
+ * Last Modified: 05/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -76,6 +76,10 @@ impl<G: Gain> Cache<G> {
     }
 
     /// get cached drives mutably
+    #[deprecated(
+        since = "18.1.0",
+        note = "Do not use this function. This function will be removed in the future."
+    )]
     pub fn drives_mut(&mut self) -> RefMut<'_, HashMap<usize, Vec<autd3_driver::common::Drive>>> {
         self.cache.borrow_mut()
     }

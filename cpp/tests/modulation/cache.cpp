@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/12/2023
+// Last Modified: 05/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,7 +12,7 @@
 #include <gtest/gtest.h>
 
 #include <autd3/modulation/modulation.hpp>
-#include <autd3/modulation/sine.hpp>
+#include <autd3/modulation/static.hpp>
 
 #include "utils.hpp"
 
@@ -20,9 +20,16 @@ TEST(Modulation, Cache) {
   auto autd1 = create_controller();
   auto autd2 = create_controller();
 
-  ASSERT_TRUE(autd1.send_async(autd3::modulation::Sine(150)).get());
-  ASSERT_TRUE(autd2.send_async(autd3::modulation::Sine(150).with_cache()).get());
+  const auto m1 = autd3::modulation::Static().with_intensity(0x80);
+  const auto m2 = autd3::modulation::Static().with_intensity(0x80).with_cache();
 
+  ASSERT_TRUE(autd1.send_async(m1).get());
+  ASSERT_TRUE(autd2.send_async(m2).get());
+
+  ASSERT_TRUE(std::ranges::all_of(m2.buffer(), [](auto d) { return d == autd3::internal::EmitIntensity(0x80); }));
+  for (const auto& m : m2) ASSERT_EQ(autd3::internal::EmitIntensity(0x80), m);
+  std::for_each(m2.cbegin(), m2.cend(), [](const auto& m) { ASSERT_EQ(autd3::internal::EmitIntensity(0x80), m); });
+  for (size_t i = 0; i < m2.size(); i++) ASSERT_EQ(autd3::internal::EmitIntensity(0x80), m2[i]);
   for (auto& dev : autd1.geometry()) {
     auto mod = autd2.link().modulation(dev.idx());
     auto mod_expect = autd1.link().modulation(dev.idx());

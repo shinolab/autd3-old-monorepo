@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/11/2023
+// Last Modified: 05/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -29,4 +29,9 @@ TEST(Modulation, Wav) {
     ASSERT_TRUE(std::ranges::equal(mod, mod_expect));
     ASSERT_EQ(5120, autd.link().modulation_frequency_division(dev.idx()));
   }
+
+  ASSERT_TRUE(autd.send_async(autd3::modulation::audio_file::Wav(path).with_sampling_config(
+                                  autd3::internal::SamplingConfiguration::from_frequency_division(512)))
+                  .get());
+  for (auto& dev : autd.geometry()) ASSERT_EQ(512, autd.link().modulation_frequency_division(dev.idx()));
 }

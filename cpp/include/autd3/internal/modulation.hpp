@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/12/2023
+// Last Modified: 05/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -25,7 +25,7 @@ class Modulation {
   Modulation& operator=(const Modulation& obj) = default;
   Modulation(Modulation&& obj) = default;
   Modulation& operator=(Modulation&& obj) = default;
-  virtual ~Modulation() = default;
+  virtual ~Modulation() = default;  // LCOV_EXCL_LINE
 
   /**
    * @brief Get sampling frequency division
