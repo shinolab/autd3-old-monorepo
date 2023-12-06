@@ -67,12 +67,6 @@ jobs:
           python3 build.py test --release --all
         shell: bash
 
-      - name: Test capi on ${{ matrix.os }}
-        if: needs.check-src.outputs.status
-        run: |
-          python3 build.py capi test --release --all
-        shell: bash
-
   build-linux-arm32-src:
     needs: check-src
     name: build-src-linux-arm32

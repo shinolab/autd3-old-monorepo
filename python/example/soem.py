@@ -16,10 +16,10 @@ import ctypes
 import os
 from typing import NoReturn
 
+from samples import runner  # type: ignore[import-not-found]
+
 from pyautd3 import AUTD3, Controller
 from pyautd3.link.soem import SOEM, OnErrFunc
-
-from .samples import runner
 
 
 def on_lost(msg: ctypes.c_char_p) -> NoReturn:

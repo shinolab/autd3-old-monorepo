@@ -168,16 +168,6 @@ SDKにおけるAPIでは, すべてグローバル座標を用いるため, 接�
 - `translate`: 平行移動
 - `rotate`: 回転
 - `affine`: アフィン変換 (平行移動/回転)
-- `force_fan`: ファン強制起動フラグ.
-  - AUTD3デバイスにはファンがついており, Auto, Off, Onの3つのファンモードが有る. Autoモードでは温度監視ICがICの温度を監視し, 一定温度以上になると自動でファンを起動する.Offモードではファンは常時オフであり, Onモードでは常時オンになる. モードの切替は, ファン横のジャンパスイッチで行う. 少しわかりにくいが, 以下の図のようにファン側をショートするとAuto, 真ん中でOff, 右側でOnとなる.
-    <figure>
-      <img src="../fig/Users_Manual/fan.jpg"/>
-      <figcaption>AUTDファン制御用のジャンパスイッチ</figcaption>
-    </figure>
-  - Autoモードの場合は温度が高くなると自動的にファンが起動する.
-  `force_fan`フラグはこのAutoモードでファンを強制的に起動するためのフラグである.
-  - 実際にフラグが更新されるのは何らかのデータを送信したときになる. フラグの更新だけがしたい場合は`UpdateFlags`を送信すれば良い.
-- `reads_fpga_info`: FPGAの状態を取得するかどうか. 詳しくは[Controller/fpga_info](./controller.md#fpga_info)を参照.
 
 ```rust,edition2021
 {{#include ../../codes/Users_Manual/device_0.rs}}

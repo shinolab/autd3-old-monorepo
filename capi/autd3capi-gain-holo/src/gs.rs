@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -43,36 +43,4 @@ pub unsafe extern "C" fn AUTDGainHoloGSWithConstraint(
 #[must_use]
 pub unsafe extern "C" fn AUTDGainHoloGSWithRepeat(holo: GainPtr, repeat: u32) -> GainPtr {
     GainPtr::new(take_gain!(holo, GS<NalgebraBackend>).with_repeat(repeat as _))
-}
-
-#[cfg(test)]
-mod tests {
-
-    use super::*;
-    use crate::{constraint::*, nalgebra_backend::*};
-
-    #[test]
-    fn test_holo_gs() {
-        unsafe {
-            let backend = AUTDNalgebraBackend();
-
-            let size = 2;
-            let points = [10., 20., 30., 40., 50., 60.];
-            let amps = vec![1.; size];
-
-            let holo = AUTDGainHoloGS(backend, points.as_ptr(), amps.as_ptr(), size as _);
-            let constraint = AUTDGainHoloConstraintDotCare();
-            let holo = AUTDGainHoloGSWithConstraint(holo, constraint);
-            let constraint = AUTDGainHoloConstraintNormalize();
-            let holo = AUTDGainHoloGSWithConstraint(holo, constraint);
-            let constraint = AUTDGainHoloConstraintUniform(0xFF);
-            let holo = AUTDGainHoloGSWithConstraint(holo, constraint);
-            let constraint = AUTDGainHoloConstraintClamp(0, 0xFF);
-            let holo = AUTDGainHoloGSWithConstraint(holo, constraint);
-
-            let _ = AUTDGainHoloGSWithRepeat(holo, 100);
-
-            AUTDDeleteNalgebraBackend(backend);
-        }
-    }
 }

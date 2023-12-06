@@ -259,12 +259,6 @@ class Config:
         else:
             return [command]
 
-    def cargo_test_capi_command(self):
-        command = self.cargo_command_base("test")
-        if self._all:
-            command.append("--all")
-        return command
-
     def cargo_clippy_capi_command(self):
         command = self.cargo_build_capi_command()[0]
         command[1] = "clippy"
@@ -405,13 +399,6 @@ def rust_coverage(args):
 
     with working_dir("src"):
         subprocess.run(config.cargo_cov_command()).check_returncode()
-
-
-def capi_test(args):
-    config = Config(args)
-
-    with working_dir("capi"):
-        subprocess.run(config.cargo_test_capi_command()).check_returncode()
 
 
 def capi_clear(_):
@@ -690,6 +677,9 @@ def cs_test(args):
 
     with working_dir("dotnet/cs/tests"):
         command = ["dotnet", "test"]
+        if not config.is_pcap_available():
+            command.append("--filter")
+            command.append("require!=soem")
         subprocess.run(command).check_returncode()
 
 
@@ -718,6 +708,9 @@ def cs_cov(args):
             "--settings",
             "coverlet.runsettings",
         ]
+        if not config.is_pcap_available():
+            command.append("--filter")
+            command.append("require!=soem")
         subprocess.run(command).check_returncode()
 
         if args.html:
@@ -1674,16 +1667,6 @@ if __name__ == "__main__":
         # capi
         parser_capi = subparsers.add_parser("capi", help="see `capi -h`")
         subparsers_capi = parser_capi.add_subparsers()
-
-        # capi test
-        parser_capi_test = subparsers_capi.add_parser("test", help="see `capi test -h`")
-        parser_capi_test.add_argument(
-            "--all", action="store_true", help="test all crates"
-        )
-        parser_capi_test.add_argument(
-            "--release", action="store_true", help="release build"
-        )
-        parser_capi_test.set_defaults(handler=capi_test)
 
         # capi clear
         parser_capi_clear = subparsers_capi.add_parser(

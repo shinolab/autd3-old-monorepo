@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/12/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -21,8 +21,6 @@ pub struct Device {
     idx: usize,
     transducers: Vec<Transducer>,
     pub enable: bool,
-    pub force_fan: bool,
-    pub reads_fpga_info: bool,
     pub sound_speed: float,
     pub attenuation: float,
     inv: Matrix3,
@@ -41,8 +39,6 @@ impl Device {
             idx,
             transducers,
             enable: true,
-            force_fan: false,
-            reads_fpga_info: false,
             sound_speed: 340.0 * METER,
             attenuation: 0.0,
             inv,

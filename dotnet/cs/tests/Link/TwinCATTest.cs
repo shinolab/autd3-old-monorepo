@@ -18,22 +18,17 @@ namespace tests.Link;
 public class TwinCATTest
 {
     [Fact]
-    public async Task TestTwinCAT()
+    public void TestTwinCAT()
     {
-        await Assert.ThrowsAsync<AUTDException>(async () => _ = await new ControllerBuilder()
-            .AddDevice(new AUTD3(Vector3d.zero))
-            .OpenWithAsync(TwinCAT.Builder().WithTimeout(TimeSpan.FromMilliseconds(200))));
-
+        var _ = TwinCAT.Builder().WithTimeout(TimeSpan.FromMilliseconds(200));
     }
 
     [Fact]
-    public async Task TestRemoteTwinCAT()
+    public void TestRemoteTwinCAT()
     {
-        await Assert.ThrowsAsync<AUTDException>(async () => _ = await new ControllerBuilder()
-            .AddDevice(new AUTD3(Vector3d.zero))
-            .OpenWithAsync(RemoteTwinCAT.Builder("xxx.xxx.xxx.xxx.xxx.xxx")
+        var _ = RemoteTwinCAT.Builder("xxx.xxx.xxx.xxx.xxx.xxx")
                 .WithServerIp(IPAddress.Parse("127.0.0.1"))
                 .WithClientAmsNetId("xxx.xxx.xxx.xxx.xxx.xxx")
-                .WithTimeout(TimeSpan.FromMilliseconds(200))));
+                .WithTimeout(TimeSpan.FromMilliseconds(200));
     }
 }

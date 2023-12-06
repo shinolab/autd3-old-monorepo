@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/12/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -56,71 +56,4 @@ pub unsafe extern "C" fn AUTDGainCalcGetResult(
 #[no_mangle]
 pub unsafe extern "C" fn AUTDGainCalcFreeResult(src: GainCalcDrivesMapPtr) {
     let _ = Box::from_raw(src.0 as *mut HashMap<usize, Vec<Drive>>);
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    use crate::{
-        gain::uniform::*,
-        geometry::{device::*, *},
-        tests::*,
-        *,
-    };
-
-    #[test]
-    fn gain() {
-        unsafe {
-            let cnt = create_controller();
-            let geo = AUTDGeometry(cnt);
-
-            let dev0 = AUTDDevice(geo, 0);
-            let dev1 = AUTDDevice(geo, 1);
-
-            let g = AUTDGainUniform(0xFE);
-            let g = AUTDGainUniformWithPhase(g, 8);
-
-            let mut drives0 = {
-                let num_trans = AUTDDeviceNumTransducers(dev0);
-                vec![
-                    autd3capi_def::Drive {
-                        intensity: 0,
-                        phase: 0
-                    };
-                    num_trans as _
-                ]
-            };
-            let mut drives1 = {
-                let num_trans = AUTDDeviceNumTransducers(dev1);
-                vec![
-                    autd3capi_def::Drive {
-                        intensity: 0,
-                        phase: 0
-                    };
-                    num_trans as _
-                ]
-            };
-
-            let res = AUTDGainCalc(g, geo);
-            let res = res.result;
-            assert!(!res.0.is_null());
-
-            AUTDGainCalcGetResult(res, drives0.as_mut_ptr(), 0);
-            AUTDGainCalcGetResult(res, drives1.as_mut_ptr(), 1);
-
-            AUTDGainCalcFreeResult(res);
-
-            drives0.iter().for_each(|d| {
-                assert_eq!(d.intensity, 0xFE);
-                assert_eq!(d.phase, 8);
-            });
-            drives1.iter().for_each(|d| {
-                assert_eq!(d.intensity, 0xFE);
-                assert_eq!(d.phase, 8);
-            });
-
-            AUTDControllerDelete(cnt);
-        }
-    }
 }

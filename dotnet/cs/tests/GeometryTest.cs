@@ -148,32 +148,6 @@ public class GeometryTest
     }
 
     [Fact]
-    public async Task TestDeviceForceFan()
-    {
-        var autd = await AUTDTest.CreateController();
-        foreach (var dev in autd.Geometry)
-        {
-            Assert.Equal(0, autd.Link.FpgaFlags(dev.Idx));
-        }
-
-        autd.Geometry[0].ForceFan = true;
-        autd.Geometry[1].ForceFan = false;
-
-        await autd.SendAsync(new UpdateFlags());
-
-        Assert.Equal(1, autd.Link.FpgaFlags(0));
-        Assert.Equal(0, autd.Link.FpgaFlags(1));
-
-        autd.Geometry[0].ForceFan = false;
-        autd.Geometry[1].ForceFan = true;
-
-        await autd.SendAsync(new UpdateFlags());
-
-        Assert.Equal(0, autd.Link.FpgaFlags(0));
-        Assert.Equal(1, autd.Link.FpgaFlags(1));
-    }
-
-    [Fact]
     public async Task TestDeviceTranslate()
     {
         var autd = await AUTDTest.CreateController();

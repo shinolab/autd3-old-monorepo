@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/12/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -342,6 +342,7 @@ mod tests {
         );
     }
 
+    #[cfg(feature = "sync")]
     struct MockLinkSync {
         pub is_open: bool,
         pub timeout: Duration,
@@ -350,6 +351,7 @@ mod tests {
         pub down: bool,
     }
 
+    #[cfg(feature = "sync")]
     impl LinkSync for MockLinkSync {
         fn close(&mut self) -> Result<(), AUTDInternalError> {
             self.is_open = false;
@@ -391,6 +393,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "sync")]
     fn close_sync() {
         let mut link = MockLinkSync {
             is_open: true,
@@ -408,6 +411,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "sync")]
     fn send_receive_sync() {
         let mut link = MockLinkSync {
             is_open: true,
@@ -439,6 +443,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "sync")]
     fn wait_msg_processed_sync() {
         let mut link = MockLinkSync {
             is_open: true,

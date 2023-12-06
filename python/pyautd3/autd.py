@@ -581,16 +581,6 @@ class Stop(SpecialDatagram):
         return Base().datagram_stop()
 
 
-class UpdateFlags(Datagram):
-    """Datagram to update flags (Force fan flag and reads FPGA info flag)."""
-
-    def __init__(self: "UpdateFlags") -> None:
-        super().__init__()
-
-    def _datagram_ptr(self: "UpdateFlags", _: Geometry) -> DatagramPtr:
-        return Base().datagram_update_flags()
-
-
 class Synchronize(Datagram):
     """Datagram to synchronize devices."""
 
@@ -632,3 +622,33 @@ class ConfigureDebugOutputIdx(Datagram):
 
     def _datagram_ptr(self: "ConfigureDebugOutputIdx", geometry: Geometry) -> DatagramPtr:
         return Base().datagram_configure_debug_output_idx(self._f_native, None, geometry._ptr)  # type: ignore[arg-type]
+
+
+class ConfigureForceFan(Datagram):
+    """Datagram to configure force fan."""
+
+    def __init__(self: "ConfigureForceFan", f: Callable[[Device], bool]) -> None:
+        super().__init__()
+
+        def f_native(_context: ctypes.c_void_p, geometry_ptr: GeometryPtr, dev_idx: int) -> bool:
+            return f(Device(dev_idx, Base().device(geometry_ptr, dev_idx)))
+
+        self._f_native = ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.c_void_p, GeometryPtr, ctypes.c_uint32)(f_native)
+
+    def _datagram_ptr(self: "ConfigureForceFan", geometry: Geometry) -> DatagramPtr:
+        return Base().datagram_configure_force_fan(self._f_native, None, geometry._ptr)  # type: ignore[arg-type]
+
+
+class ConfigureReadsFPGAInfo(Datagram):
+    """Datagram to configure reads FPGA info."""
+
+    def __init__(self: "ConfigureReadsFPGAInfo", f: Callable[[Device], bool]) -> None:
+        super().__init__()
+
+        def f_native(_context: ctypes.c_void_p, geometry_ptr: GeometryPtr, dev_idx: int) -> bool:
+            return f(Device(dev_idx, Base().device(geometry_ptr, dev_idx)))
+
+        self._f_native = ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.c_void_p, GeometryPtr, ctypes.c_uint32)(f_native)
+
+    def _datagram_ptr(self: "ConfigureReadsFPGAInfo", geometry: Geometry) -> DatagramPtr:
+        return Base().datagram_configure_reads_fpga_info(self._f_native, None, geometry._ptr)  # type: ignore[arg-type]

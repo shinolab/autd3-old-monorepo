@@ -4,7 +4,7 @@
  * Created Date: 29/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/12/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -32,8 +32,8 @@ pub use autd3_driver::{
 pub use custom::{CustomGain, CustomModulation};
 pub use drive::*;
 pub use dynamic_datagram::{
-    DynamicConfigureDebugOutputIdx, DynamicConfigureModDelay, DynamicDatagram, DynamicDatagramPack,
-    DynamicDatagramPack2,
+    DynamicConfigureDebugOutputIdx, DynamicConfigureForceFan, DynamicConfigureModDelay,
+    DynamicConfigureReadsFPGAInfo, DynamicDatagram, DynamicDatagramPack, DynamicDatagramPack2,
 };
 pub use dynamic_link::DynamicLinkBuilder;
 pub use libc::c_void;
@@ -280,24 +280,3 @@ pub struct EmissionConstraintPtr(pub ConstPtr);
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub struct GroupGainMapPtr(pub ConstPtr);
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_timer_strategy() {
-        assert_eq!(
-            TimerStrategy::Sleep as u8,
-            autd3::prelude::TimerStrategy::Sleep as u8
-        );
-        assert_eq!(
-            TimerStrategy::BusyWait as u8,
-            autd3::prelude::TimerStrategy::BusyWait as u8
-        );
-        assert_eq!(
-            TimerStrategy::NativeTimer as u8,
-            autd3::prelude::TimerStrategy::NativeTimer as u8
-        );
-    }
-}

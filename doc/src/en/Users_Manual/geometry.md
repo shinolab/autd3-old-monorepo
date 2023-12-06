@@ -155,15 +155,6 @@ Or, you can use an iterator.
 - `translate`: Apply translation
 - `rotate`: Apply rotation
 - `affine`: Apply affine transformation (translation/rotation)
-- `force_fan`: flag to force the fan to start in Auto mode.
-  - AUTD3 device has a fan, and it has three fan modes: Auto, Off, and On. In Auto mode, the temperature monitoring IC monitors the temperature of the IC, and when it exceeds a certain temperature, the fan starts automatically. In Off mode, the fan is always off, and in On mode, the fan is always on. The fan mode is switched by the jumper switch next to the fan. As shown in the figure below, the fan side is shorted to switch to Auto, the center is Off, and the right is On.
-    <figure>
-      <img src="../fig/Users_Manual/fan.jpg"/>
-    <figcaption>Jumper switch to specify fan mode</figcaption>
-    </figure>
-  - `force_fan` flag is a flag to force the fan to start in Auto mode.
-  - The flag is actually updated when some data is sent. If you want to update only the flag, send `UpdateFlags`.
-- `reads_fpga_info`: flag to read the FPGA status. See [Controller/fpga_info](./controller.md#fpga_info) for details.
 
 ```rust,edition2021
 {{#include ../../codes/Users_Manual/device_0.rs}}

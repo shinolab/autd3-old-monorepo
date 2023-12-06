@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/12/2023
+// Last Modified: 06/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -77,16 +77,6 @@ class Clear final {
   Clear() = default;
 
   [[nodiscard]] static native_methods::DatagramPtr ptr(const geometry::Geometry&) { return native_methods::AUTDDatagramClear(); }
-};
-
-/**
- * @brief Datagram to update flags (Force fan flag and reads FPGA info flag)
- */
-class UpdateFlags final {
- public:
-  UpdateFlags() = default;
-
-  [[nodiscard]] static native_methods::DatagramPtr ptr(const geometry::Geometry&) { return native_methods::AUTDDatagramUpdateFlags(); }
 };
 
 /**

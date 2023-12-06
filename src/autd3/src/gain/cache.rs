@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/12/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 use autd3_driver::{derive::prelude::*, geometry::Geometry};
 
 use std::{
-    cell::{Ref, RefCell, RefMut},
+    cell::{Ref, RefCell},
     collections::HashMap,
     rc::Rc,
 };
@@ -74,15 +74,6 @@ impl<G: Gain> Cache<G> {
     pub fn drives(&self) -> Ref<'_, HashMap<usize, Vec<autd3_driver::common::Drive>>> {
         self.cache.borrow()
     }
-
-    /// get cached drives mutably
-    #[deprecated(
-        since = "18.1.0",
-        note = "Do not use this function. This function will be removed in the future."
-    )]
-    pub fn drives_mut(&mut self) -> RefMut<'_, HashMap<usize, Vec<autd3_driver::common::Drive>>> {
-        self.cache.borrow_mut()
-    }
 }
 
 impl<G: Gain + 'static> autd3_driver::datagram::Datagram for Cache<G>
@@ -137,22 +128,13 @@ mod tests {
     fn test_cache() {
         let geometry: Geometry = Geometry::new(vec![AUTD3::new(Vector3::zeros()).into_device(0)]);
 
-        let mut gain = Plane::new(Vector3::zeros()).with_cache();
+        let gain = Plane::new(Vector3::zeros()).with_cache();
 
         let d = gain.calc(&geometry, GainFilter::All).unwrap();
         d[&0].iter().for_each(|drive| {
             assert_eq!(drive.phase.value(), 0);
             assert_eq!(drive.intensity.value(), 0xFF);
         });
-
-        gain.drives_mut()
-            .get_mut(&0)
-            .unwrap()
-            .iter_mut()
-            .for_each(|drive| {
-                drive.phase = Phase::new(1);
-                drive.intensity = EmitIntensity::new(0x1F);
-            });
 
         let d = gain.calc(&geometry, GainFilter::All).unwrap();
         d[&0].iter().for_each(|drive| {

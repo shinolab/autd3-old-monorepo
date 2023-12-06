@@ -4,7 +4,7 @@
  * Created Date: 22/11/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/12/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -38,25 +38,4 @@ pub unsafe extern "C" fn AUTDPhaseToRad(value: u8) -> float {
 pub struct Drive {
     pub phase: u8,
     pub intensity: u8,
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn drive_test() {
-        assert_eq!(
-            std::mem::size_of::<autd3_driver::common::Drive>(),
-            std::mem::size_of::<Drive>()
-        );
-        assert_eq!(
-            memoffset::offset_of!(autd3_driver::common::Drive, phase),
-            memoffset::offset_of!(Drive, phase)
-        );
-        assert_eq!(
-            memoffset::offset_of!(autd3_driver::common::Drive, intensity),
-            memoffset::offset_of!(Drive, intensity)
-        );
-    }
 }

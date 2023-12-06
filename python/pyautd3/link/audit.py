@@ -57,6 +57,9 @@ class Audit(Link):
     def is_open(self: "Audit") -> bool:
         return bool(LinkAudit().link_audit_is_open(self._ptr))
 
+    def is_force_fan(self: "Audit", idx: int) -> bool:
+        return bool(LinkAudit().link_audit_fpga_is_force_fan(self._ptr, idx))
+
     def last_timeout_ns(self: "Audit") -> int:
         return int(LinkAudit().link_audit_last_timeout_ns(self._ptr))
 
@@ -68,9 +71,6 @@ class Audit(Link):
 
     def update(self: "Audit", idx: int) -> None:
         LinkAudit().link_audit_cpu_update(self._ptr, idx)
-
-    def fpga_flags(self: "Audit", idx: int) -> int:
-        return int(LinkAudit().link_audit_cpu_fpga_flags(self._ptr, idx))
 
     def silencer_step_intensity(self: "Audit", idx: int) -> int:
         return int(LinkAudit().link_audit_fpga_silencer_step_intensity(self._ptr, idx))

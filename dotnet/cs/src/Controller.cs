@@ -543,14 +543,6 @@ namespace AUTD3Sharp
     }
 
     /// <summary>
-    /// Datagram to update flags (Force fan flag and reads FPGA info flag)
-    /// </summary>
-    public sealed class UpdateFlags : IDatagram
-    {
-        DatagramPtr IDatagram.Ptr(Geometry geometry) => NativeMethodsBase.AUTDDatagramUpdateFlags();
-    }
-
-    /// <summary>
     /// Datagram for clear all data in devices
     /// </summary>
     public sealed class Clear : IDatagram
@@ -616,6 +608,51 @@ namespace AUTD3Sharp
 
         DatagramPtr IDatagram.Ptr(Geometry geometry) => NativeMethodsBase.AUTDDatagramConfigureDebugOutputIdx(Marshal.GetFunctionPointerForDelegate(_f), IntPtr.Zero, geometry.Ptr);
     }
+
+    /// <summary>
+    /// Datagram to configure force fan
+    /// </summary>
+    public sealed class ConfigureForceFan : IDatagram
+    {
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        public delegate bool ConfigureForceFanDelegate(IntPtr context, GeometryPtr geometryPtr, uint devIdx);
+
+        private readonly ConfigureForceFanDelegate _f;
+
+        public ConfigureForceFan(Func<Device, bool> f)
+        {
+            _f = (context, geometryPtr, devIdx) =>
+            {
+                return f(new Device((int)devIdx, NativeMethodsBase.AUTDDevice(geometryPtr, devIdx)));
+            };
+        }
+
+        DatagramPtr IDatagram.Ptr(Geometry geometry) => NativeMethodsBase.AUTDDatagramConfigureForceFan(Marshal.GetFunctionPointerForDelegate(_f), IntPtr.Zero, geometry.Ptr);
+    }
+
+    /// <summary>
+    /// Datagram to configure reads FPGA Info
+    /// </summary>
+    public sealed class ConfigureReadsFPGAInfo : IDatagram
+    {
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        public delegate bool ConfigureReadsFPGAInfoDelegate(IntPtr context, GeometryPtr geometryPtr, uint devIdx);
+
+        private readonly ConfigureReadsFPGAInfoDelegate _f;
+
+        public ConfigureReadsFPGAInfo(Func<Device, bool> f)
+        {
+            _f = (context, geometryPtr, devIdx) =>
+            {
+                return f(new Device((int)devIdx, NativeMethodsBase.AUTDDevice(geometryPtr, devIdx)));
+            };
+        }
+
+        DatagramPtr IDatagram.Ptr(Geometry geometry) => NativeMethodsBase.AUTDDatagramConfigureReadsFPGAInfo(Marshal.GetFunctionPointerForDelegate(_f), IntPtr.Zero, geometry.Ptr);
+    }
+
 
     /// <summary>
     /// Datagram to configure silencer

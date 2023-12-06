@@ -3,7 +3,7 @@
 // Created Date: 26/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 05/12/2023
+// Last Modified: 06/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -57,6 +57,8 @@ class Audit final {
 
   [[nodiscard]] bool is_open() const { return AUTDLinkAuditIsOpen(_ptr); }
 
+  [[nodiscard]] bool is_force_fan(const size_t idx) const { return AUTDLinkAuditFpgaIsForceFan(_ptr, static_cast<std::uint32_t>(idx)); }
+
   [[nodiscard]] std::uint64_t last_timeout_ns() const { return AUTDLinkAuditLastTimeoutNs(_ptr); }
 
   void up() const { AUTDLinkAuditUp(_ptr); }
@@ -64,8 +66,6 @@ class Audit final {
   void break_down() const { AUTDLinkAuditBreakDown(_ptr); }
 
   void update(const size_t idx) const { AUTDLinkAuditCpuUpdate(_ptr, static_cast<std::uint32_t>(idx)); }
-
-  [[nodiscard]] int fpga_flags(const size_t idx) const { return AUTDLinkAuditCpuFpgaFlags(_ptr, static_cast<std::uint32_t>(idx)); }
 
   [[nodiscard]] int silencer_step_intensity(const size_t idx) const {
     return AUTDLinkAuditFpgaSilencerStepIntensity(_ptr, static_cast<std::uint32_t>(idx));

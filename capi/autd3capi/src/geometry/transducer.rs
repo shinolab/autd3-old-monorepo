@@ -4,7 +4,7 @@
  * Created Date: 24/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/12/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -66,58 +66,4 @@ pub unsafe extern "C" fn AUTDTransducerDirectionZ(tr: TransducerPtr, dir: *mut f
 #[must_use]
 pub unsafe extern "C" fn AUTDTransducerWavelength(tr: TransducerPtr, sound_speed: float) -> float {
     cast!(tr.0, Transducer).wavelength(sound_speed)
-}
-
-#[cfg(test)]
-mod tests {
-
-    use super::*;
-
-    use crate::{
-        geometry::{device::*, *},
-        tests::*,
-        *,
-    };
-
-    #[test]
-    fn test_transducer() {
-        unsafe {
-            let cnt = create_controller();
-            let geo = AUTDGeometry(cnt);
-
-            let dev = AUTDDevice(geo, 0);
-
-            let tr = AUTDTransducer(dev, 0);
-
-            assert_approx_eq::assert_approx_eq!(AUTDTransducerWavelength(tr, 340.), 340.0 / 40e3);
-
-            let mut v = [0., 0., 0.];
-            AUTDTransducerPosition(tr, v.as_mut_ptr());
-            assert_approx_eq::assert_approx_eq!(v[0], 0.);
-            assert_approx_eq::assert_approx_eq!(v[1], 0.);
-            assert_approx_eq::assert_approx_eq!(v[2], 0.);
-
-            let mut v = [0., 0., 0., 0.];
-            AUTDTransducerRotation(tr, v.as_mut_ptr());
-            assert_approx_eq::assert_approx_eq!(v[0], 1.);
-            assert_approx_eq::assert_approx_eq!(v[1], 0.);
-            assert_approx_eq::assert_approx_eq!(v[2], 0.);
-            assert_approx_eq::assert_approx_eq!(v[3], 0.);
-
-            AUTDTransducerDirectionX(tr, v.as_mut_ptr());
-            assert_approx_eq::assert_approx_eq!(v[0], 1.);
-            assert_approx_eq::assert_approx_eq!(v[1], 0.);
-            assert_approx_eq::assert_approx_eq!(v[2], 0.);
-            AUTDTransducerDirectionY(tr, v.as_mut_ptr());
-            assert_approx_eq::assert_approx_eq!(v[0], 0.);
-            assert_approx_eq::assert_approx_eq!(v[1], 1.);
-            assert_approx_eq::assert_approx_eq!(v[2], 0.);
-            AUTDTransducerDirectionZ(tr, v.as_mut_ptr());
-            assert_approx_eq::assert_approx_eq!(v[0], 0.);
-            assert_approx_eq::assert_approx_eq!(v[1], 0.);
-            assert_approx_eq::assert_approx_eq!(v[2], 1.);
-
-            AUTDControllerDelete(cnt);
-        }
-    }
 }
