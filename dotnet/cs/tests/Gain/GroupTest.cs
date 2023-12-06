@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/12/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -27,7 +27,6 @@ public class GroupTest
             var x when x < cx => "uniform",
             _ => "null"
         }).Set("uniform", new Uniform(new EmitIntensity(0x80)).WithPhase(new Phase(0x90))).Set("null", new Null())));
-
         foreach (var dev in autd.Geometry)
         {
             var (intensities, phases) = autd.Link.IntensitiesAndPhases(dev.Idx, 0);
@@ -37,6 +36,29 @@ public class GroupTest
                 {
                     Assert.Equal(0x80, intensities[tr.Idx]);
                     Assert.Equal(0x90, phases[tr.Idx]);
+                }
+                else
+                {
+                    Assert.Equal(0, intensities[tr.Idx]);
+                    Assert.Equal(0, phases[tr.Idx]);
+                }
+            }
+        }
+
+        Assert.True(await autd.SendAsync(new Group((_, tr) => tr.Position.x switch
+        {
+            var x when x > cx => "uniform",
+            _ => null
+        }).Set("uniform", new Uniform(new EmitIntensity(0x81)).WithPhase(new Phase(0x91)))));
+        foreach (var dev in autd.Geometry)
+        {
+            var (intensities, phases) = autd.Link.IntensitiesAndPhases(dev.Idx, 0);
+            foreach (var tr in dev)
+            {
+                if (tr.Position.x > cx)
+                {
+                    Assert.Equal(0x81, intensities[tr.Idx]);
+                    Assert.Equal(0x91, phases[tr.Idx]);
                 }
                 else
                 {

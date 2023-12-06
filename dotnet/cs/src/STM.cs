@@ -4,7 +4,7 @@
  * Created Date: 20/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/12/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -180,10 +180,12 @@ namespace AUTD3Sharp
 
             internal override DatagramPtr STMPtr(Geometry geometry)
             {
+                var points = _points.ToArray();
+                var intensities = _intensities.ToArray();
                 unsafe
                 {
-                    fixed (float_t* pp = _points.ToArray())
-                    fixed (EmitIntensity* ps = _intensities.ToArray())
+                    fixed (float_t* pp = &points[0])
+                    fixed (EmitIntensity* ps = &intensities[0])
                         return NativeMethodsBase.AUTDSTMFocus(Props(), pp, (byte*)ps, (ulong)_intensities.Count)
                             .Validate();
                 }
@@ -274,7 +276,7 @@ namespace AUTD3Sharp
                 var gains = _gains.Select(g => g.GainPtr(geometry)).ToArray();
                 unsafe
                 {
-                    fixed (GainPtr* gp = gains)
+                    fixed (GainPtr* gp = &gains[0])
                         return NativeMethodsBase.AUTDSTMGain(Props(), gp, (uint)gains.Length, _mode).Validate();
                 }
             }

@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/12/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -39,13 +39,11 @@ public class GainSTMTest
         }
 
         Assert.Equal(1, stm.Frequency);
+        Assert.Equal(TimeSpan.FromMicroseconds(1000000), stm.Period);
         Assert.Equal(2, stm.SamplingConfiguration.Frequency);
         Assert.Equal(10240000u, stm.SamplingConfiguration.FrequencyDivision);
         Assert.Equal(TimeSpan.FromMicroseconds(500000), stm.SamplingConfiguration.Period);
-        foreach (var dev in autd.Geometry)
-        {
-            Assert.Equal(10240000u, autd.Link.StmFrequencyDivision(dev.Idx));
-        }
+        foreach (var dev in autd.Geometry) Assert.Equal(10240000u, autd.Link.StmFrequencyDivision(dev.Idx));
 
         Assert.Null(stm.StartIdx);
         Assert.Null(stm.FinishIdx);
@@ -55,7 +53,7 @@ public class GainSTMTest
             Assert.Equal(-1, autd.Link.StmFinishIdx(dev.Idx));
         }
 
-        stm = stm.WithStartIdx(0);
+        stm = stm.WithStartIdx(0).WithFinishIdx(null);
         Assert.True(await autd.SendAsync(stm));
         Assert.Equal((ushort)0, stm.StartIdx);
         Assert.Null(stm.FinishIdx);
@@ -74,6 +72,17 @@ public class GainSTMTest
             Assert.Equal(-1, autd.Link.StmStartIdx(dev.Idx));
             Assert.Equal(0, autd.Link.StmFinishIdx(dev.Idx));
         }
+
+        stm = GainSTM.FromPeriod(TimeSpan.FromMicroseconds(1000000))
+           .AddGainsFromIter(Enumerable.Range(0, size).Select(i => 2 * Math.PI * i / size).Select(theta =>
+               new Focus(center + radius * new Vector3d(Math.Cos(theta), Math.Sin(theta), 0))));
+        Assert.True(await autd.SendAsync(stm));
+        Assert.Equal(1, stm.Frequency);
+        Assert.Equal(TimeSpan.FromMicroseconds(1000000), stm.Period);
+        Assert.Equal(2, stm.SamplingConfiguration.Frequency);
+        Assert.Equal(10240000u, stm.SamplingConfiguration.FrequencyDivision);
+        Assert.Equal(TimeSpan.FromMicroseconds(500000), stm.SamplingConfiguration.Period);
+        foreach (var dev in autd.Geometry) Assert.Equal(10240000u, autd.Link.StmFrequencyDivision(dev.Idx));
 
         stm = GainSTM.FromSamplingConfig(SamplingConfiguration.FromFrequencyDivision(512)).AddGain(new Uniform(EmitIntensity.Max)).AddGain(new Uniform(new EmitIntensity(0x80)));
         Assert.True(await autd.SendAsync(stm));

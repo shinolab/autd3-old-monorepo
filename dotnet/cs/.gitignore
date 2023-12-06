@@ -434,3 +434,5 @@ $RECYCLE.BIN/
 nuget.ps1
 
 coverage.cobertura.xml
+
+html/

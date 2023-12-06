@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -42,7 +42,6 @@ namespace AUTD3Sharp.Gain.Holo
 
         ~NalgebraBackend()
         {
-            if (Ptr.Item1 == IntPtr.Zero) return;
             NativeMethodsGainHolo.AUTDDeleteNalgebraBackend(Ptr);
             Ptr.Item1 = IntPtr.Zero;
         }
@@ -51,8 +50,8 @@ namespace AUTD3Sharp.Gain.Holo
         {
             unsafe
             {
-                fixed (float_t* pf = foci)
-                fixed (Amplitude* pa = amps)
+                fixed (float_t* pf = &foci[0])
+                fixed (Amplitude* pa = &amps[0])
                 {
                     return NativeMethodsGainHolo.AUTDGainHoloSDP(Ptr, pf, (float_t*)pa, size);
                 }
@@ -83,8 +82,8 @@ namespace AUTD3Sharp.Gain.Holo
         {
             unsafe
             {
-                fixed (float_t* pf = foci)
-                fixed (Amplitude* pa = amps)
+                fixed (float_t* pf = &foci[0])
+                fixed (Amplitude* pa = &amps[0])
                 {
                     return NativeMethodsGainHolo.AUTDGainHoloGS(Ptr, pf, (float_t*)pa, size);
                 }
@@ -105,8 +104,8 @@ namespace AUTD3Sharp.Gain.Holo
         {
             unsafe
             {
-                fixed (float_t* pf = foci)
-                fixed (Amplitude* pa = amps)
+                fixed (float_t* pf = &foci[0])
+                fixed (Amplitude* pa = &amps[0])
                 {
                     return NativeMethodsGainHolo.AUTDGainHoloGSPAT(Ptr, pf, (float_t*)pa, size);
                 }
@@ -127,8 +126,8 @@ namespace AUTD3Sharp.Gain.Holo
         {
             unsafe
             {
-                fixed (float_t* pf = foci)
-                fixed (Amplitude* pa = amps)
+                fixed (float_t* pf = &foci[0])
+                fixed (Amplitude* pa = &amps[0])
                 {
                     return NativeMethodsGainHolo.AUTDGainHoloNaive(Ptr, pf, (float_t*)pa, size);
                 }
@@ -144,8 +143,8 @@ namespace AUTD3Sharp.Gain.Holo
         {
             unsafe
             {
-                fixed (float_t* pf = foci)
-                fixed (Amplitude* pa = amps)
+                fixed (float_t* pf = &foci[0])
+                fixed (Amplitude* pa = &amps[0])
                 {
                     return NativeMethodsGainHolo.AUTDGainHoloLM(Ptr, pf, (float_t*)pa, size);
                 }
@@ -176,7 +175,7 @@ namespace AUTD3Sharp.Gain.Holo
         {
             unsafe
             {
-                fixed (float_t* p = v)
+                fixed (float_t* p = &v[0])
                 {
                     return NativeMethodsGainHolo.AUTDGainHoloLMWithInitial(ptr, p, size);
                 }

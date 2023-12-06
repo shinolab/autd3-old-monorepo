@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/11/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -25,7 +25,7 @@ public class SOEMTest
         _testOutputHelper = testOutputHelper;
     }
 
-    [Fact(Skip = "SOEM is required")]
+    [Fact]
     public async Task TestSOEM()
     {
         var onLost = new SOEM.OnErrCallbackDelegate(msg =>
@@ -38,31 +38,27 @@ public class SOEMTest
             _testOutputHelper.WriteLine(msg);
         });
 
-        var autd = await new ControllerBuilder()
-            .AddDevice(new AUTD3(Vector3d.zero))
-            .OpenWithAsync(SOEM.Builder()
-                .WithIfname("")
-                .WithBufSize(32)
-                .WithSendCycle(2)
-                .WithSync0Cycle(2)
-                .WithOnLost(onLost)
-                .WithOnErr(onErr)
-                .WithTimerStrategy(TimerStrategy.Sleep)
-                .WithSyncMode(SyncMode.FreeRun)
-                .WithStateCheckInterval(TimeSpan.FromMilliseconds(100))
-                .WithTimeout(TimeSpan.FromMilliseconds(200)));
-
-        await autd.CloseAsync();
+        await Assert.ThrowsAsync<AUTDException>(async () => _ = await new ControllerBuilder()
+             .AddDevice(new AUTD3(Vector3d.zero))
+             .OpenWithAsync(SOEM.Builder()
+                 .WithIfname("ifname")
+                 .WithBufSize(32)
+                 .WithSendCycle(2)
+                 .WithSync0Cycle(2)
+                 .WithOnLost(onLost)
+                 .WithOnErr(onErr)
+                 .WithTimerStrategy(TimerStrategy.Sleep)
+                 .WithSyncMode(SyncMode.FreeRun)
+                 .WithStateCheckInterval(TimeSpan.FromMilliseconds(100))
+                 .WithTimeout(TimeSpan.FromMilliseconds(200))));
     }
 
-    [Fact(Skip = "SOEM is required")]
+    [Fact]
     public async Task TestRemoteSOEM()
     {
-        var autd = await new ControllerBuilder()
+        await Assert.ThrowsAsync<AUTDException>(async () => _ = await new ControllerBuilder()
             .AddDevice(new AUTD3(Vector3d.zero))
             .OpenWithAsync(RemoteSOEM.Builder(new IPEndPoint(IPAddress.Parse("172.0.0.1"), 8080))
-                .WithTimeout(TimeSpan.FromMilliseconds(200)));
-
-        await autd.CloseAsync();
+                .WithTimeout(TimeSpan.FromMilliseconds(200))));
     }
 }

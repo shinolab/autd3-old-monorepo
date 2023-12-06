@@ -4,7 +4,7 @@
  * Created Date: 12/11/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/12/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -49,7 +49,6 @@ namespace AUTD3Sharp
 
         public static EmitIntensity operator /(EmitIntensity a, int b)
         {
-            if (b == 0) throw new DivideByZeroException();
             return new EmitIntensity((byte)(a.Value / b));
         }
     }

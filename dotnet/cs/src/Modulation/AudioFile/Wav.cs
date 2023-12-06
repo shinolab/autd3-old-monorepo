@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -42,17 +42,9 @@ namespace AUTD3Sharp.Modulation.AudioFile
             var filenameBytes = System.Text.Encoding.UTF8.GetBytes(_filename);
             unsafe
             {
-                fixed (byte* fp = filenameBytes)
+                fixed (byte* fp = &filenameBytes[0])
                 {
-                    var result = NativeMethodsModulationAudioFile.AUTDModulationWav(fp);
-                    if (result.result.Item1 == IntPtr.Zero)
-                    {
-                        var err = new byte[result.err_len];
-                        fixed (byte* p = err)
-                            NativeMethodsDef.AUTDGetErr(result.err, p);
-                        throw new AUTDException(err);
-                    }
-                    var ptr = result.result;
+                    var ptr = NativeMethodsModulationAudioFile.AUTDModulationWav(fp).Validate();
                     if (Config != null)
                         ptr = NativeMethodsModulationAudioFile.AUTDModulationRawPCMWithSamplingConfig(ptr, Config.Value.Internal);
                     return ptr;
