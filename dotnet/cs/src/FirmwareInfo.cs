@@ -4,7 +4,7 @@
  * Created Date: 28/04/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -21,7 +21,7 @@ using AUTD3Sharp.NativeMethods;
 
 namespace AUTD3Sharp
 {
-    public readonly struct FirmwareInfo : IEquatable<FirmwareInfo>
+    public readonly struct FirmwareInfo
     {
         public string Info { get; }
 
@@ -32,7 +32,7 @@ namespace AUTD3Sharp
                 var latest = new byte[256];
                 unsafe
                 {
-                    fixed (byte* l = latest)
+                    fixed (byte* l = &latest[0])
                         NativeMethodsBase.AUTDFirmwareLatest(l);
                 }
                 return Encoding.UTF8.GetString(latest).TrimEnd('\0');
@@ -44,12 +44,7 @@ namespace AUTD3Sharp
             Info = info.TrimEnd('\0');
         }
 
-        public override string ToString() => $"{Info}";
-        public bool Equals(FirmwareInfo other) => Info.Equals(other.Info);
-        public static bool operator ==(FirmwareInfo left, FirmwareInfo right) => left.Equals(right);
-        public static bool operator !=(FirmwareInfo left, FirmwareInfo right) => !left.Equals(right);
-        public override bool Equals(object? obj) => obj is FirmwareInfo info && Equals(info);
-        public override int GetHashCode() => Info.GetHashCode();
+        public override string ToString() => Info;
     }
 }
 

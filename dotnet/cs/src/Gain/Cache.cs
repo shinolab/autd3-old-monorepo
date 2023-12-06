@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -51,7 +51,7 @@ namespace AUTD3Sharp.Gain
                 var drives = new Drive[dev.NumTransducers];
                 unsafe
                 {
-                    fixed (Drive* p = drives)
+                    fixed (Drive* p = &drives[0])
                         NativeMethodsBase.AUTDGainCalcGetResult(res, (DriveRaw*)p, (uint)dev.Idx);
                 }
                 _cache[dev.Idx] = drives;
@@ -66,7 +66,7 @@ namespace AUTD3Sharp.Gain
             {
                 unsafe
                 {
-                    fixed (Drive* p = _cache[dev.Idx])
+                    fixed (Drive* p = &_cache[dev.Idx][0])
                         return NativeMethodsBase.AUTDGainCustomSet(acc, (uint)dev.Idx, (DriveRaw*)p, (uint)_cache[dev.Idx].Length);
                 }
             });

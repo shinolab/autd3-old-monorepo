@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/12/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,11 +20,7 @@ public class SineTest
     {
         var autd = await new ControllerBuilder().AddDevice(new AUTD3(Vector3d.zero)).OpenWithAsync(Audit.Builder());
 
-        Assert.True(await autd.SendAsync(new Sine(150).WithIntensity(EmitIntensity.Max / 2).WithOffset(EmitIntensity.Max / 4).WithPhase(Math.PI / 2.0)));
-        foreach (var dev in autd.Geometry)
-        {
-            var mod = autd.Link.Modulation(dev.Idx);
-            var modExpect = new byte[] {
+        var modExpect = new byte[] {
                 126,
                 124,
                 119,
@@ -105,12 +101,28 @@ public class SineTest
                 111,
                 119,
                 124};
+
+        Assert.True(await autd.SendAsync(new Sine(150).WithIntensity(EmitIntensity.Max / 2).WithOffset(EmitIntensity.Max / 4).WithPhase(Math.PI / 2.0)));
+        foreach (var dev in autd.Geometry)
+        {
+            var mod = autd.Link.Modulation(dev.Idx);
             Assert.Equal(modExpect, mod);
             Assert.Equal(5120u, autd.Link.ModulationFrequencyDivision(dev.Idx));
         }
 
 
-        Assert.True(await autd.SendAsync(new Sine(150).WithSamplingConfig(SamplingConfiguration.FromFrequencyDivision(512))));
+        Assert.True(await autd.SendAsync(new Sine(150).WithIntensity(127).WithOffset(63).WithPhase(Math.PI / 2.0)));
+        foreach (var dev in autd.Geometry)
+        {
+            var mod = autd.Link.Modulation(dev.Idx);
+            Assert.Equal(modExpect, mod);
+            Assert.Equal(5120u, autd.Link.ModulationFrequencyDivision(dev.Idx));
+        }
+
+        var m = new Sine(150).WithSamplingConfig(SamplingConfiguration.FromFrequencyDivision(512));
+        Assert.Equal(800, m.Length);
+        Assert.Equal(SamplingConfiguration.FromFrequencyDivision(512), m.SamplingConfiguration);
+        Assert.True(await autd.SendAsync(m));
         foreach (var dev in autd.Geometry)
         {
             Assert.Equal(512u, autd.Link.ModulationFrequencyDivision(dev.Idx));

@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/12/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -62,7 +62,7 @@ namespace AUTD3Sharp.Gain
             var deviceIndices = geometry.Devices().Select(dev => (uint)dev.Idx).ToArray();
             unsafe
             {
-                fixed (uint* deviceIndicesPtr = deviceIndices)
+                fixed (uint* deviceIndicesPtr = &deviceIndices[0])
                 {
                     var map = NativeMethodsBase.AUTDGainGroupCreateMap(deviceIndicesPtr, (uint)deviceIndices.Length);
                     var k = 0;
@@ -81,7 +81,7 @@ namespace AUTD3Sharp.Gain
                                 m[tr.Idx] = -1;
                         }
 
-                        fixed (int* p = m)
+                        fixed (int* p = &m[0])
                             map = NativeMethodsBase.AUTDGainGroupMapSet(map, (uint)dev.Idx, p);
                     }
 

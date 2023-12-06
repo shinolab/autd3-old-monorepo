@@ -715,6 +715,8 @@ def cs_cov(args):
             "dotnet",
             "test",
             '--collect:"XPlat Code Coverage"',
+            "--settings",
+            "coverlet.runsettings",
         ]
         subprocess.run(command).check_returncode()
 

@@ -4,7 +4,7 @@
  * Created Date: 20/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -51,7 +51,7 @@ namespace AUTD3Sharp.Link
                 var ifnameBytes = System.Text.Encoding.UTF8.GetBytes(ifname);
                 unsafe
                 {
-                    fixed (byte* p = ifnameBytes)
+                    fixed (byte* p = &ifnameBytes[0])
                         _ptr = NativeMethodsLinkSOEM.AUTDLinkSOEMWithIfname(_ptr, p);
                 }
 
@@ -176,8 +176,8 @@ namespace AUTD3Sharp.Link
             {
                 var sbDesc = new byte[128];
                 var sbName = new byte[128];
-                fixed (byte* dp = sbDesc)
-                fixed (byte* np = sbName)
+                fixed (byte* dp = &sbDesc[0])
+                fixed (byte* np = &sbName[0])
                 {
                     NativeMethodsLinkSOEM.AUTDAdapterGetAdapter(handle, i, dp, np);
                 }
@@ -215,17 +215,9 @@ namespace AUTD3Sharp.Link
                 var ipBytes = System.Text.Encoding.UTF8.GetBytes(ipStr);
                 unsafe
                 {
-                    fixed (byte* ipPtr = ipBytes)
+                    fixed (byte* ipPtr = &ipBytes[0])
                     {
-                        var res = NativeMethodsLinkSOEM.AUTDLinkRemoteSOEM(ipPtr);
-                        if (res.result.Item1 == IntPtr.Zero)
-                        {
-                            var err = new byte[res.err_len];
-                            fixed (byte* ep = err)
-                                NativeMethodsDef.AUTDGetErr(res.err, ep);
-                            throw new AUTDException(err);
-                        }
-                        _ptr = res.result;
+                        _ptr = NativeMethodsLinkSOEM.AUTDLinkRemoteSOEM(ipPtr).Validate();
                     }
                 }
             }

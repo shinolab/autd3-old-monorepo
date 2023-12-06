@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2023
+ * Last Modified: 06/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -66,8 +66,8 @@ namespace AUTD3Sharp.Gain.Holo
         {
             unsafe
             {
-                fixed (float_t* foci = Foci.ToArray())
-                fixed (Amplitude* amps = Amps.ToArray())
+                fixed (float_t* foci = &Foci.ToArray()[0])
+                fixed (Amplitude* amps = &Amps.ToArray()[0])
                 {
                     var ptr = NativeMethodsGainHolo.AUTDGainHoloGreedy(foci, (float_t*)amps, (ulong)Amps.Count);
                     if (_phaseDiv.HasValue)
