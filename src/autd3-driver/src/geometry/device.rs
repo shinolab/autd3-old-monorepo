@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/12/2023
+ * Last Modified: 07/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -142,7 +142,10 @@ pub trait IntoDevice {
 
 #[cfg(test)]
 pub mod tests {
-    use crate::{defined::PI, geometry::Transducer};
+    use crate::{
+        defined::{MILLIMETER, PI},
+        geometry::Transducer,
+    };
 
     use super::*;
 
@@ -224,7 +227,11 @@ pub mod tests {
         let mut device = Device::new(0, transducers);
 
         device.set_sound_speed_from_temp(15.);
-        assert_approx_eq::assert_approx_eq!(device.sound_speed, 340.29527186788846e3);
+        assert_approx_eq::assert_approx_eq!(
+            device.sound_speed,
+            340.29527186788846e3 * MILLIMETER,
+            1e-3
+        );
     }
 
     #[test]

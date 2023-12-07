@@ -1,5 +1,6 @@
-# 18.0.2
+# 19.0.0
 
+- Fix [#230](https://github.com/shinolab/autd3/issues/230): Add tests with single_float and use_meter features
 - Fix [#238](https://github.com/shinolab/autd3/issues/238): [C#] Simulator.WithServerIp causes crash
 
 # 18.0.1
