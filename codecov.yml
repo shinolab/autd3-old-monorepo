@@ -1,17 +1,17 @@
 flags:
   rust:
     paths:
-      - src/
-    carryforward: false
+      - src/**/*.rs
+    carryforward: true
   cpp:
     paths:
-      - cpp/
-    carryforward: false
+      - cpp/include/autd3/**/*.hpp
+    carryforward: true
   cs:
     paths:
-      - dotnet/cs/
-    carryforward: false
+      - dotnet/cs/src/**/*.cs
+    carryforward: true
   python:
     paths:
-      - python/
-    carryforward: false
+      - python/pyautd3/**/*.py
+    carryforward: true
