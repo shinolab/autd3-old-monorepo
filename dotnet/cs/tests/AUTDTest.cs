@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/12/2023
+ * Last Modified: 07/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -28,7 +28,7 @@ public class AUTDTest
     [Fact]
     public async Task TestSilencer()
     {
-        var autd = await CreateController();
+        using var autd = await CreateController();
 
         foreach (var dev in autd.Geometry)
         {
@@ -61,7 +61,7 @@ public class AUTDTest
     [Fact]
     public async Task TestDebugOutputIdx()
     {
-        var autd = await CreateController();
+        using var autd = await CreateController();
 
         foreach (var dev in autd.Geometry)
         {
@@ -82,7 +82,7 @@ public class AUTDTest
     [Fact]
     public async Task TestFPGAInfo()
     {
-        var autd = await CreateController();
+        using var autd = await CreateController();
 
         Assert.True(await autd.SendAsync(new ConfigureReadsFPGAInfo(_ => true)));
 
@@ -167,7 +167,7 @@ public class AUTDTest
     [Fact]
     public async Task TestFirmwareInfoList()
     {
-        var autd = await CreateController();
+        using var autd = await CreateController();
 
         Assert.Equal("v4.1.0", FirmwareInfo.LatestVersion);
 
@@ -202,7 +202,7 @@ public class AUTDTest
     public async Task TestClose()
     {
         {
-            var autd = await CreateController();
+            using var autd = await CreateController();
             Assert.True(autd.Link.IsOpen());
 
             await autd.CloseAsync();
@@ -213,7 +213,7 @@ public class AUTDTest
         }
 
         {
-            var autd = await CreateController();
+            using var autd = await CreateController();
 
             autd.Link.BreakDown();
             await Assert.ThrowsAsync<AUTDException>(async () => await autd.CloseAsync());
@@ -321,7 +321,7 @@ public class AUTDTest
     [Fact]
     public async Task TestSendSingle()
     {
-        var autd = await CreateController();
+        using var autd = await CreateController();
 
         foreach (var dev in autd.Geometry)
         {
@@ -371,7 +371,7 @@ public class AUTDTest
     [Fact]
     public async Task TestSendDouble()
     {
-        var autd = await CreateController();
+        using var autd = await CreateController();
 
         foreach (var dev in autd.Geometry)
         {
@@ -431,7 +431,7 @@ public class AUTDTest
     [Fact]
     public async Task TestSendSpecial()
     {
-        var autd = await CreateController();
+        using var autd = await CreateController();
         Assert.True(await autd.SendAsync(new Uniform(EmitIntensity.Max)));
 
         foreach (var dev in autd.Geometry)
@@ -483,7 +483,7 @@ public class AUTDTest
     [Fact]
     public async Task TestGroup()
     {
-        var autd = await CreateController();
+        using var autd = await CreateController();
 
         await autd.Group(dev => dev.Idx.ToString())
              .Set("0", (new Static(), new Null()))
@@ -601,7 +601,7 @@ public class AUTDTest
     [Fact]
     public async Task TestGroupWithTimeout()
     {
-        var autd = await CreateController();
+        using var autd = await CreateController();
 
         await autd.Group(dev => dev.Idx.ToString())
              .Set("0", (new Static(), new Null()), TimeSpan.FromSeconds(10))
@@ -615,7 +615,7 @@ public class AUTDTest
     [Fact]
     public async Task TestGroupCheckOnlyForEnabled()
     {
-        var autd = await CreateController();
+        using var autd = await CreateController();
         autd.Geometry[0].Enable = false;
 
         var check = new bool[autd.Geometry.NumDevices];
@@ -645,7 +645,7 @@ public class AUTDTest
     [Fact]
     public async Task TestClear()
     {
-        var autd = await CreateController();
+        using var autd = await CreateController();
         Assert.True(await autd.SendAsync(new Uniform(EmitIntensity.Max).WithPhase(new Phase(0x90))));
         foreach (var dev in autd.Geometry)
         {
@@ -670,7 +670,7 @@ public class AUTDTest
     [Fact]
     public async Task TestStop()
     {
-        var autd = await CreateController();
+        using var autd = await CreateController();
         Assert.True(await autd.SendAsync(new Uniform(EmitIntensity.Max).WithPhase(new Phase(0x90))));
         foreach (var dev in autd.Geometry)
         {
@@ -699,7 +699,7 @@ public class AUTDTest
     [Fact]
     public async Task TestConfigureModDelay()
     {
-        var autd = await CreateController();
+        using var autd = await CreateController();
 
         foreach (var dev in autd.Geometry)
         {

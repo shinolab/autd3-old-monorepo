@@ -4,7 +4,7 @@
  * Created Date: 25/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/12/2023
+ * Last Modified: 07/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -37,7 +37,7 @@ public class CacheTest
     {
         var autd = await new ControllerBuilder().AddDevice(new AUTD3(Vector3d.zero)).OpenWithAsync(Audit.Builder());
 
-        var m = new Static().WithCache();
+        using var m = new Static().WithCache();
         Assert.Equal(new EmitIntensity(0xFF), m[0]);
         Assert.Equal(new EmitIntensity(0xFF), m[1]);
         var buffer = m.Buffer;
