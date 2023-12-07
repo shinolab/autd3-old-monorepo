@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/12/2023
+ * Last Modified: 07/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -25,6 +25,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using System.Diagnostics.CodeAnalysis;
 using AUTD3Sharp.Internal;
 using AUTD3Sharp.NativeMethods;
 
@@ -241,6 +242,8 @@ namespace AUTD3Sharp
             GC.SuppressFinalize(this);
         }
 
+
+        [ExcludeFromCodeCoverage]
         ~Controller()
         {
             Dispose();
