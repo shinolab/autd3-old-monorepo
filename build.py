@@ -204,6 +204,9 @@ class Config:
             command.append("--all")
         command.append("--features")
         command.append(features)
+        if not self.is_pcap_available():
+            command.append("--exclude")
+            command.append("autd3-link-soem")
         return command
 
     def cargo_example_build_command(self):
