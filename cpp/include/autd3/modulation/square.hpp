@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/12/2023
+// Last Modified: 08/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -38,6 +38,7 @@ class Square final : public internal::ModulationWithSamplingConfig<Square>,
   AUTD3_DEF_PARAM_INTENSITY(Square, low)
   AUTD3_DEF_PARAM_INTENSITY(Square, high)
   AUTD3_DEF_PARAM(Square, double, duty)
+  AUTD3_DEF_PARAM(Square, internal::native_methods::SamplingMode, mode)
 
   [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override {
     auto ptr = internal::native_methods::AUTDModulationSquare(_freq);
@@ -46,6 +47,7 @@ class Square final : public internal::ModulationWithSamplingConfig<Square>,
     if (_duty.has_value()) ptr = AUTDModulationSquareWithDuty(ptr, _duty.value());
     if (_config.has_value())
       ptr = AUTDModulationSquareWithSamplingConfig(ptr, static_cast<internal::native_methods::SamplingConfiguration>(_config.value()));
+    if (_mode.has_value()) ptr = AUTDModulationSquareWithMode(ptr, _mode.value());
     return ptr;
   }
 
@@ -54,6 +56,7 @@ class Square final : public internal::ModulationWithSamplingConfig<Square>,
   std::optional<internal::EmitIntensity> _low;
   std::optional<internal::EmitIntensity> _high;
   std::optional<double> _duty;
+  std::optional<internal::native_methods::SamplingMode> _mode;
 };
 
 }  // namespace autd3::modulation

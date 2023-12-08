@@ -11,6 +11,8 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 """
 
+from pyautd3.native_methods.autd3capi import SamplingMode
+
 from .cache import Cache
 from .fourier import Fourier
 from .modulation import Modulation
@@ -26,6 +28,7 @@ __all__ = [
     "Sine",
     "Fourier",
     "Square",
+    "SamplingMode",
 ]
 
 _ = Cache, Transform, RadiationPressure

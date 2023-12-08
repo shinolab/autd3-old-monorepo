@@ -375,6 +375,9 @@ namespace AUTD3Sharp.NativeMethods
         [DllImport(__DllName, EntryPoint = "AUTDModulationSineWithOffset", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern ModulationPtr AUTDModulationSineWithOffset(ModulationPtr m, byte offset);
 
+        [DllImport(__DllName, EntryPoint = "AUTDModulationSineWithMode", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern ModulationPtr AUTDModulationSineWithMode(ModulationPtr m, SamplingMode mode);
+
         [DllImport(__DllName, EntryPoint = "AUTDModulationSquare", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern ModulationPtr AUTDModulationSquare(double freq);
 
@@ -389,6 +392,9 @@ namespace AUTD3Sharp.NativeMethods
 
         [DllImport(__DllName, EntryPoint = "AUTDModulationSquareWithSamplingConfig", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern ModulationPtr AUTDModulationSquareWithSamplingConfig(ModulationPtr m, SamplingConfigurationRaw config);
+
+        [DllImport(__DllName, EntryPoint = "AUTDModulationSquareWithMode", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern ModulationPtr AUTDModulationSquareWithMode(ModulationPtr m, SamplingMode mode);
 
         [DllImport(__DllName, EntryPoint = "AUTDModulationStatic", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern ModulationPtr AUTDModulationStatic();
@@ -483,6 +489,12 @@ namespace AUTD3Sharp.NativeMethods
         public IntPtr err;
     }
 
+
+    public enum SamplingMode : byte
+    {
+        ExactFrequency = 0,
+        SizeOptimized = 1,
+    }
 
 
 }
