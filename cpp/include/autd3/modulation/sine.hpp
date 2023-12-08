@@ -3,7 +3,7 @@
 // Created Date: 13/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/12/2023
+// Last Modified: 08/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -42,6 +42,7 @@ class Sine final : public internal::ModulationWithSamplingConfig<Sine>,
   AUTD3_DEF_PARAM_INTENSITY(Sine, intensity)
   AUTD3_DEF_PARAM_INTENSITY(Sine, offset)
   AUTD3_DEF_PARAM(Sine, double, phase)
+  AUTD3_DEF_PARAM(Sine, internal::native_methods::SamplingMode, mode)
 
   friend Fourier operator+(Sine&& lhs, const Sine& rhs);
 
@@ -52,6 +53,7 @@ class Sine final : public internal::ModulationWithSamplingConfig<Sine>,
     if (_offset.has_value()) ptr = AUTDModulationSineWithOffset(ptr, _offset.value().value());
     if (_config.has_value())
       ptr = AUTDModulationSineWithSamplingConfig(ptr, static_cast<internal::native_methods::SamplingConfiguration>(_config.value()));
+    if (_mode.has_value()) ptr = AUTDModulationSineWithMode(ptr, _mode.value());
     return ptr;
   }
 
@@ -60,6 +62,7 @@ class Sine final : public internal::ModulationWithSamplingConfig<Sine>,
   std::optional<internal::EmitIntensity> _intensity;
   std::optional<double> _phase;
   std::optional<internal::EmitIntensity> _offset;
+  std::optional<internal::native_methods::SamplingMode> _mode;
 };
 
 }  // namespace autd3::modulation

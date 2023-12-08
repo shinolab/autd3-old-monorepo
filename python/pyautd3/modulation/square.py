@@ -15,6 +15,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 from pyautd3.emit_intensity import EmitIntensity
 from pyautd3.internal.modulation import IModulationWithSamplingConfig
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
+from pyautd3.native_methods.autd3capi import SamplingMode
 from pyautd3.native_methods.autd3capi_def import ModulationPtr
 
 
@@ -25,6 +26,7 @@ class Square(IModulationWithSamplingConfig):
     _low: EmitIntensity | None
     _high: EmitIntensity | None
     _duty: float | None
+    _mode: SamplingMode | None
 
     def __init__(self: "Square", freq: float) -> None:
         """Constructor.
@@ -38,6 +40,7 @@ class Square(IModulationWithSamplingConfig):
         self._low = None
         self._high = None
         self._duty = None
+        self._mode = None
 
     def with_low(self: "Square", low: int | EmitIntensity) -> "Square":
         """Set low level intensity.
@@ -69,6 +72,16 @@ class Square(IModulationWithSamplingConfig):
         self._duty = duty
         return self
 
+    def with_mode(self: "Square", mode: SamplingMode) -> "Square":
+        """Set sampling mode.
+
+        Arguments:
+        ---------
+            mode: Sampling mode
+        """
+        self._mode = mode
+        return self
+
     def _modulation_ptr(self: "Square") -> ModulationPtr:
         ptr = Base().modulation_square(self._freq)
         if self._low is not None:
@@ -79,4 +92,6 @@ class Square(IModulationWithSamplingConfig):
             ptr = Base().modulation_square_with_duty(ptr, self._duty)
         if self._config is not None:
             ptr = Base().modulation_square_with_sampling_config(ptr, self._config._internal)
+        if self._mode is not None:
+            ptr = Base().modulation_square_with_mode(ptr, self._mode)
         return ptr

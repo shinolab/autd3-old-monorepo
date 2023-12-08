@@ -6,6 +6,11 @@
 
 namespace autd3::internal::native_methods {
 
+enum class SamplingMode : uint8_t {
+  ExactFrequency = 0,
+  SizeOptimized = 1,
+};
+
 struct ControllerBuilderPtr {
   void* _0;
 };
@@ -354,6 +359,8 @@ ModulationPtr AUTDModulationSineWithSamplingConfig(ModulationPtr m,
 
 [[nodiscard]] ModulationPtr AUTDModulationSineWithOffset(ModulationPtr m, uint8_t offset);
 
+[[nodiscard]] ModulationPtr AUTDModulationSineWithMode(ModulationPtr m, SamplingMode mode);
+
 [[nodiscard]] ModulationPtr AUTDModulationSquare(double freq);
 
 [[nodiscard]] ModulationPtr AUTDModulationSquareWithLow(ModulationPtr m, uint8_t low);
@@ -365,6 +372,8 @@ ModulationPtr AUTDModulationSineWithSamplingConfig(ModulationPtr m,
 [[nodiscard]]
 ModulationPtr AUTDModulationSquareWithSamplingConfig(ModulationPtr m,
                                                      SamplingConfiguration config);
+
+[[nodiscard]] ModulationPtr AUTDModulationSquareWithMode(ModulationPtr m, SamplingMode mode);
 
 [[nodiscard]] ModulationPtr AUTDModulationStatic();
 
