@@ -4,6 +4,16 @@ import ctypes
 import os
 from pyautd3.native_methods.autd3capi_def import CachePtr, ControllerPtr, DatagramPtr, DatagramSpecialPtr, DevicePtr, Drive, FirmwareInfoListPtr, GainCalcDrivesMapPtr, GainPtr, GainSTMMode, GeometryPtr, GroupGainMapPtr, GroupKVMapPtr, LinkBuilderPtr, LinkPtr, ModulationPtr, ResultController, ResultDatagram, ResultGainCalcDrivesMap, ResultI32, ResultSamplingConfig, STMPropsPtr, SamplingConfiguration, TransducerPtr
 
+from enum import IntEnum
+
+class SamplingMode(IntEnum):
+    ExactFrequency = 0
+    SizeOptimized = 1
+
+    @classmethod
+    def from_param(cls, obj):
+        return int(obj)
+
 
 class ContextPtr(ctypes.Structure):
     _fields_ = [("_0", ctypes.c_void_p)]
@@ -403,6 +413,9 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDModulationSineWithOffset.argtypes = [ModulationPtr, ctypes.c_uint8]  # type: ignore 
         self.dll.AUTDModulationSineWithOffset.restype = ModulationPtr
 
+        self.dll.AUTDModulationSineWithMode.argtypes = [ModulationPtr, SamplingMode]  # type: ignore 
+        self.dll.AUTDModulationSineWithMode.restype = ModulationPtr
+
         self.dll.AUTDModulationSquare.argtypes = [ctypes.c_double] 
         self.dll.AUTDModulationSquare.restype = ModulationPtr
 
@@ -417,6 +430,9 @@ class NativeMethods(metaclass=Singleton):
 
         self.dll.AUTDModulationSquareWithSamplingConfig.argtypes = [ModulationPtr, SamplingConfiguration]  # type: ignore 
         self.dll.AUTDModulationSquareWithSamplingConfig.restype = ModulationPtr
+
+        self.dll.AUTDModulationSquareWithMode.argtypes = [ModulationPtr, SamplingMode]  # type: ignore 
+        self.dll.AUTDModulationSquareWithMode.restype = ModulationPtr
 
         self.dll.AUTDModulationStatic.argtypes = [] 
         self.dll.AUTDModulationStatic.restype = ModulationPtr
@@ -820,6 +836,9 @@ class NativeMethods(metaclass=Singleton):
     def modulation_sine_with_offset(self, m: ModulationPtr, offset: int) -> ModulationPtr:
         return self.dll.AUTDModulationSineWithOffset(m, offset)
 
+    def modulation_sine_with_mode(self, m: ModulationPtr, mode: SamplingMode) -> ModulationPtr:
+        return self.dll.AUTDModulationSineWithMode(m, mode)
+
     def modulation_square(self, freq: float) -> ModulationPtr:
         return self.dll.AUTDModulationSquare(freq)
 
@@ -834,6 +853,9 @@ class NativeMethods(metaclass=Singleton):
 
     def modulation_square_with_sampling_config(self, m: ModulationPtr, config: SamplingConfiguration) -> ModulationPtr:
         return self.dll.AUTDModulationSquareWithSamplingConfig(m, config)
+
+    def modulation_square_with_mode(self, m: ModulationPtr, mode: SamplingMode) -> ModulationPtr:
+        return self.dll.AUTDModulationSquareWithMode(m, mode)
 
     def modulation_static(self) -> ModulationPtr:
         return self.dll.AUTDModulationStatic()

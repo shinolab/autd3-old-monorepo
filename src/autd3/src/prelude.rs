@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/12/2023
+ * Last Modified: 08/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -21,7 +21,7 @@ pub use crate::{
     error::AUTDError,
     gain::{Bessel, Focus, Group, Null, Plane, TransducerTest, Uniform},
     link::Nop,
-    modulation::{IntoRadiationPressure, Sine, Square, Static},
+    modulation::{IntoRadiationPressure, SamplingMode, Sine, Square, Static},
 };
 
 pub use autd3_driver::{

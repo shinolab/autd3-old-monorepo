@@ -14,6 +14,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 from pyautd3.emit_intensity import EmitIntensity
 from pyautd3.internal.modulation import IModulationWithSamplingConfig
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
+from pyautd3.native_methods.autd3capi import SamplingMode
 from pyautd3.native_methods.autd3capi_def import ModulationPtr
 
 
@@ -24,6 +25,7 @@ class Sine(IModulationWithSamplingConfig):
     _intensity: EmitIntensity | None
     _offset: EmitIntensity | None
     _phase: float | None
+    _mode: SamplingMode | None
 
     def __init__(self: "Sine", freq: float) -> None:
         """Constructor.
@@ -40,6 +42,7 @@ class Sine(IModulationWithSamplingConfig):
         self._intensity = None
         self._offset = None
         self._phase = None
+        self._mode = None
 
     def with_intensity(self: "Sine", intensity: int | EmitIntensity) -> "Sine":
         """Set intensity.
@@ -71,6 +74,16 @@ class Sine(IModulationWithSamplingConfig):
         self._phase = phase
         return self
 
+    def with_mode(self: "Sine", mode: SamplingMode) -> "Sine":
+        """Set sampling mode.
+
+        Arguments:
+        ---------
+            mode: Sampling mode
+        """
+        self._mode = mode
+        return self
+
     def _modulation_ptr(self: "Sine") -> ModulationPtr:
         ptr = Base().modulation_sine(self._freq)
         if self._intensity is not None:
@@ -81,4 +94,6 @@ class Sine(IModulationWithSamplingConfig):
             ptr = Base().modulation_sine_with_phase(ptr, self._phase)
         if self._config is not None:
             ptr = Base().modulation_sine_with_sampling_config(ptr, self._config._internal)
+        if self._mode is not None:
+            ptr = Base().modulation_sine_with_mode(ptr, self._mode)
         return ptr

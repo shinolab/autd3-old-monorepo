@@ -16,7 +16,8 @@ import numpy as np
 import pytest
 
 from pyautd3 import EmitIntensity, SamplingConfiguration
-from pyautd3.modulation import Sine
+from pyautd3.autd_error import AUTDError
+from pyautd3.modulation import SamplingMode, Sine
 from tests.test_autd import create_controller
 
 
@@ -122,3 +123,19 @@ async def test_sine():
     )
     for dev in autd.geometry:
         assert autd.link.modulation_frequency_division(dev.idx) == 512
+
+
+@pytest.mark.asyncio()
+async def test_sine_mode():
+    autd = await create_controller()
+
+    assert await autd.send_async(Sine(150).with_mode(SamplingMode.SizeOptimized))
+    for dev in autd.geometry:
+        mod = autd.link.modulation(dev.idx)
+        mod_expect = [127, 156, 184, 209, 229, 244, 252, 254, 249, 237, 219, 197, 170, 142, 112, 84, 57, 35, 17, 5, 0, 2, 10, 25, 45, 70, 0]
+        assert np.array_equal(mod, mod_expect)
+
+    with pytest.raises(AUTDError):
+        await autd.send_async(Sine(100.1).with_mode(SamplingMode.ExactFrequency))
+
+    assert await autd.send_async(Sine(100.1).with_mode(SamplingMode.SizeOptimized))

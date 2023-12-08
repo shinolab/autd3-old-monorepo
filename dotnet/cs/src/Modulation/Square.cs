@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/12/2023
+ * Last Modified: 08/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -38,6 +38,7 @@ namespace AUTD3Sharp.Modulation
         private EmitIntensity? _low;
         private EmitIntensity? _high;
         private float_t? _duty;
+        private SamplingMode? _mode;
 
         public Square(float_t freq)
         {
@@ -45,6 +46,7 @@ namespace AUTD3Sharp.Modulation
             _low = null;
             _high = null;
             _duty = null;
+            _mode = null;
         }
 
         /// <summary>
@@ -103,6 +105,17 @@ namespace AUTD3Sharp.Modulation
             return this;
         }
 
+        /// <summary>
+        /// Set sampling mode
+        /// </summary>
+        /// <param name="mode">sampling mode</param>
+        /// <returns></returns>
+        public Square WithMode(SamplingMode mode)
+        {
+            _mode = mode;
+            return this;
+        }
+
         internal override ModulationPtr ModulationPtr()
         {
             var ptr = NativeMethodsBase.AUTDModulationSquare(_freq);
@@ -114,6 +127,8 @@ namespace AUTD3Sharp.Modulation
                 ptr = NativeMethodsBase.AUTDModulationSquareWithDuty(ptr, _duty.Value);
             if (Config != null)
                 ptr = NativeMethodsBase.AUTDModulationSquareWithSamplingConfig(ptr, Config.Value.Internal);
+            if (_mode != null)
+                ptr = NativeMethodsBase.AUTDModulationSquareWithMode(ptr, _mode.Value);
             return ptr;
         }
     }
