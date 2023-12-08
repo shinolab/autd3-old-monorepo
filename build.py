@@ -195,9 +195,11 @@ class Config:
         command.append("examples")
         return command
 
-    def cargo_test_command(self):
+    def cargo_test_command(self, additional_features=None):
         command = self.cargo_command_base("test")
         features = "test-utilities remote"
+        if additional_features is not None:
+            features += " " + additional_features
         if self._all:
             command.append("--all")
         command.append("--features")
@@ -869,6 +871,16 @@ def unity_build(args):
         rm_f(f"{unity_dir}/Assets/Editor/autd_simulator.exe.meta")
         rm_f(f"{unity_dir}/Assets/Editor/SimulatorRun.cs")
         rm_f(f"{unity_dir}/Assets/Editor/SimulatorRun.cs.meta")
+
+
+def unity_test(args):
+    args.all = True
+    config = Config(args)
+
+    with working_dir("src"):
+        subprocess.run(
+            config.cargo_test_command(additional_features="use_meter single_float")
+        ).check_returncode()
 
 
 def unity_clear(_):
@@ -1801,6 +1813,15 @@ if __name__ == "__main__":
             "--release", action="store_true", help="release build"
         )
         parser_unity_build.set_defaults(handler=unity_build)
+
+        # unity test
+        parser_unity_test = subparsers_unity.add_parser(
+            "test", help="see `unity test -h`"
+        )
+        parser_unity_test.add_argument(
+            "--release", action="store_true", help="release build"
+        )
+        parser_unity_test.set_defaults(handler=unity_test)
 
         # unity clear
         parser_unity_clear = subparsers_unity.add_parser(

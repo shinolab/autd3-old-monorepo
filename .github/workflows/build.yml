@@ -67,6 +67,44 @@ jobs:
           python3 build.py test --release --all
         shell: bash
 
+
+  test-src-for-unity:
+    needs: check-src
+    name: test-src-for-unity-${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v3
+        
+      - name: Rust cache
+        if: needs.check-src.outputs.status
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src -> target'
+
+      - name: Setup Python
+        if: needs.check-src.outputs.status
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+      - name: Setup
+        if: needs.check-src.outputs.status
+        uses: ./.github/actions/setup-build
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          os: ${{ matrix.os }}
+          shaderc: false
+
+      - name: Test src for unity on ${{ matrix.os }}
+        if: needs.check-src.outputs.status
+        run: |
+          python3 build.py unity test
+        shell: bash
+
   build-linux-arm32-src:
     needs: check-src
     name: build-src-linux-arm32

@@ -4,7 +4,7 @@
  * Created Date: 22/11/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/11/2023
+ * Last Modified: 07/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -69,7 +69,7 @@ mod tests {
     fn test_db() {
         let amp = 121.5 * dB;
 
-        assert_eq!(amp.value, 23.77004454874038);
+        assert_approx_eq::assert_approx_eq!(amp.value, 23.77, 1e-3);
     }
 
     #[test]

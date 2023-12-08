@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/11/2023
+ * Last Modified: 07/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -178,10 +178,17 @@ mod tests {
     fn focus_stm_point_out_of_range() {
         let err = AUTDInternalError::FocusSTMPointOutOfRange(1.0, 2.0, 3.0);
         assert!(err.source().is_none());
-        assert_eq!(
-            format!("{}", err),
-            "Point (1, 2, 3) is out of range. Each parameter must be in [-3276.8, 3276.775]."
-        );
+        if cfg!(feature = "use_meter") {
+            assert_eq!(
+                format!("{}", err),
+                "Point (1, 2, 3) is out of range. Each parameter must be in [-3.2768, 3.276775]."
+            );
+        } else {
+            assert_eq!(
+                format!("{}", err),
+                "Point (1, 2, 3) is out of range. Each parameter must be in [-3276.8, 3276.775]."
+            );
+        }
         assert_eq!(
             format!("{:?}", err),
             "FocusSTMPointOutOfRange(1.0, 2.0, 3.0)"
