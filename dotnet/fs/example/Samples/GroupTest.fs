@@ -3,7 +3,7 @@
 // Created Date: 15/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/12/2023
+// Last Modified: 08/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -28,7 +28,7 @@ module GroupByDeviceTest =
              )
             .Set("null", new Static(), new Null())
             .Set("focus", new Sine(150), new Focus(autd.Geometry.Center + new Vector3d(0,0,150)))
-            .SendAsync()|> Async.AwaitTask |> Async.RunSynchronously;
+            .SendAsync()|> Async.AwaitTask |> Async.RunSynchronously |> ignore;
 
 module GroupByTransducerTest =
     let Test<'T> (autd : Controller<'T>) = 
