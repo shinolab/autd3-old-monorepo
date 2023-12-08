@@ -1,6 +1,6 @@
 [package]
 name = "examples"
-version = "18.0.1"
+version = "19.0.0"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 license = "MIT"

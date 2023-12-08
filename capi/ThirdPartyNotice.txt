@@ -46,31 +46,31 @@ atty 0.2.14 (MIT)
 https://github.com/softprops/atty
 ---------------------------------------------------------
 
-autd3 18.0.1 (MIT)
+autd3 19.0.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-derive 18.0.1 (MIT)
+autd3-derive 19.0.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-driver 18.0.1 (MIT)
+autd3-driver 19.0.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-firmware-emulator 18.0.1 (MIT)
+autd3-firmware-emulator 19.0.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-gain-holo 18.0.1 (MIT)
+autd3-gain-holo 19.0.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-link-simulator 18.0.1 (MIT)
+autd3-link-simulator 19.0.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-link-soem 18.0.1
+autd3-link-soem 19.0.0
 https://github.com/shinolab/autd3
 
 ---
@@ -136,7 +136,7 @@ SOEM write to Beckhoff Automation GmbH, Eiserstrasse 5, D-33415 Verl, Germany
 
 ---------------------------------------------------------
 
-autd3-link-twincat 18.0.1
+autd3-link-twincat 19.0.0
 https://github.com/shinolab/autd3
 
 ---
@@ -188,37 +188,37 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-autd3-modulation-audio-file 18.0.1 (MIT)
+autd3-modulation-audio-file 19.0.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3-protobuf 18.0.1 (MIT)
+autd3-protobuf 19.0.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3capi 18.0.1 (MIT)
+autd3capi 19.0.0 (MIT)
 ---------------------------------------------------------
 
-autd3capi-def 18.0.1 (MIT)
+autd3capi-def 19.0.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
-autd3capi-gain-holo 18.0.1 (MIT)
+autd3capi-gain-holo 19.0.0 (MIT)
 ---------------------------------------------------------
 
-autd3capi-link-simulator 18.0.1 (MIT)
+autd3capi-link-simulator 19.0.0 (MIT)
 ---------------------------------------------------------
 
-autd3capi-link-soem 18.0.1 (MIT)
+autd3capi-link-soem 19.0.0 (MIT)
 ---------------------------------------------------------
 
-autd3capi-link-twincat 18.0.1 (MIT)
+autd3capi-link-twincat 19.0.0 (MIT)
 ---------------------------------------------------------
 
-autd3capi-modulation-audio-file 18.0.1 (MIT)
+autd3capi-modulation-audio-file 19.0.0 (MIT)
 ---------------------------------------------------------
 
-autd3capi-wrapper-generator 18.0.1 (MIT)
+autd3capi-wrapper-generator 19.0.0 (MIT)
 https://github.com/shinolab/autd3
 ---------------------------------------------------------
 
@@ -502,7 +502,7 @@ miniz_oxide 0.7.1 (Apache-2.0 OR MIT OR Zlib)
 https://github.com/Frommi/miniz_oxide/tree/master/miniz_oxide
 ---------------------------------------------------------
 
-mio 0.8.9 (MIT)
+mio 0.8.10 (MIT)
 https://github.com/tokio-rs/mio
 ---------------------------------------------------------
 
@@ -550,7 +550,7 @@ object 0.32.1 (Apache-2.0 OR MIT)
 https://github.com/gimli-rs/object
 ---------------------------------------------------------
 
-once_cell 1.18.0 (Apache-2.0 OR MIT)
+once_cell 1.19.0 (Apache-2.0 OR MIT)
 https://github.com/matklad/once_cell
 ---------------------------------------------------------
 
@@ -810,7 +810,7 @@ tracing-core 0.1.32 (MIT)
 https://github.com/tokio-rs/tracing
 ---------------------------------------------------------
 
-try-lock 0.2.4 (MIT)
+try-lock 0.2.5 (MIT)
 https://github.com/seanmonstar/try-lock
 ---------------------------------------------------------
 

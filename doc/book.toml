@@ -2,7 +2,7 @@
 authors = ["shun suzuki"]
 language = "en"
 multilingual = true
-title = "AUTD3 Developers Manual v18.0.1"
+title = "AUTD3 Developers Manual v19.0.0"
 
 src = "src"
 destination = "book"
