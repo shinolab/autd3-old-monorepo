@@ -4,7 +4,7 @@
  * Created Date: 23/08/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/12/2023
+ * Last Modified: 08/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,6 +14,8 @@
 #![allow(clippy::missing_safety_doc)]
 
 use autd3capi_def::{autd3::modulation::Square, *};
+
+use super::SamplingMode;
 
 #[no_mangle]
 #[must_use]
@@ -49,4 +51,13 @@ pub unsafe extern "C" fn AUTDModulationSquareWithSamplingConfig(
     config: SamplingConfiguration,
 ) -> ModulationPtr {
     ModulationPtr::new(take_mod!(m, Square).with_sampling_config(config.into()))
+}
+
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDModulationSquareWithMode(
+    m: ModulationPtr,
+    mode: SamplingMode,
+) -> ModulationPtr {
+    ModulationPtr::new(take_mod!(m, Square).with_mode(mode.into()))
 }

@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/12/2023
+ * Last Modified: 08/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -16,6 +16,8 @@ use autd3_driver::{common::EmitIntensity, derive::prelude::*};
 
 use num::integer::gcd;
 
+use super::sampling_mode::SamplingMode;
+
 /// Square wave modulation
 #[derive(Modulation, Clone, Copy)]
 pub struct Square {
@@ -24,6 +26,7 @@ pub struct Square {
     high: EmitIntensity,
     duty: float,
     config: SamplingConfiguration,
+    mode: SamplingMode,
 }
 
 impl Square {
@@ -40,6 +43,7 @@ impl Square {
             high: EmitIntensity::MAX,
             duty: 0.5,
             config: SamplingConfiguration::from_frequency(4e3).unwrap(),
+            mode: SamplingMode::ExactFrequency,
         }
     }
 
@@ -79,6 +83,16 @@ impl Square {
         Self { duty, ..self }
     }
 
+    /// set sampling mode
+    ///
+    /// # Arguments
+    ///
+    /// * `mode` - Sampling mode
+    ///
+    pub fn with_mode(self, mode: SamplingMode) -> Self {
+        Self { mode, ..self }
+    }
+
     pub fn duty(&self) -> float {
         self.duty
     }
@@ -104,11 +118,28 @@ impl Modulation for Square {
             ));
         }
 
-        let sf = self.sampling_config().frequency() as usize;
-        let freq = (self.freq as usize).clamp(1, sf / 2);
-        let k = gcd(sf, freq);
-        let n = sf / k;
-        let d = freq / k;
+        let (d, n) = match self.mode {
+            SamplingMode::ExactFrequency => {
+                let sf = self.sampling_config().frequency() as usize;
+                if self.freq.fract() != 0.0 {
+                    return Err(AUTDInternalError::ModulationError(
+                        "Frequency must be integer".to_string(),
+                    ));
+                }
+                let freq = (self.freq as usize).clamp(1, sf / 2);
+                let k = gcd(sf, freq);
+                let n = sf / k;
+                let d = freq / k;
+                (d, n)
+            }
+            SamplingMode::SizeOptimized => {
+                let sf = self.sampling_config().frequency();
+                let freq = self.freq.clamp(0., sf / 2.);
+                let n = (sf / freq).round() as usize;
+                (1, n)
+            }
+        };
+
         Ok((0..d)
             .map(|i| (n + i) / d)
             .flat_map(|size| {
@@ -142,6 +173,42 @@ mod tests {
             .for_each(|(e, a)| {
                 assert_eq!(e, a.value());
             });
+    }
+
+    #[test]
+    fn test_square_with_size_opt() {
+        let expect = [
+            255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0,
+        ];
+        let m = Square::new(150.).with_mode(SamplingMode::SizeOptimized);
+        assert_approx_eq::assert_approx_eq!(m.sampling_config().frequency(), 4e3);
+        assert_eq!(expect.len(), m.calc().unwrap().len());
+        expect
+            .into_iter()
+            .zip(m.calc().unwrap().iter())
+            .for_each(|(e, a)| {
+                assert_eq!(e, a.value());
+            });
+    }
+
+    #[test]
+    fn test_square_new() {
+        let m = Square::new(100.);
+        assert_eq!(m.freq(), 100.);
+        assert_eq!(m.high(), EmitIntensity::MAX);
+        assert_eq!(m.low(), EmitIntensity::MIN);
+        let vec = m.calc().unwrap();
+        assert!(!vec.is_empty());
+        let m = Square::new(100.1);
+        assert_eq!(
+            m.calc(),
+            Err(AUTDInternalError::ModulationError(
+                "Frequency must be integer".to_string()
+            ))
+        );
+        let m = Square::new(100.1).with_mode(SamplingMode::SizeOptimized);
+        assert!(m.calc().is_ok());
     }
 
     #[test]

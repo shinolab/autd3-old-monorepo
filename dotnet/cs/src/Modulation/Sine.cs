@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/12/2023
+ * Last Modified: 08/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -38,6 +38,7 @@ namespace AUTD3Sharp.Modulation
         private EmitIntensity? _intensity;
         private EmitIntensity? _offset;
         private float_t? _phase;
+        private SamplingMode? _mode;
 
         /// <summary>
         /// Constructor
@@ -50,6 +51,7 @@ namespace AUTD3Sharp.Modulation
             _intensity = null;
             _phase = null;
             _offset = null;
+            _mode = null;
         }
 
         /// <summary>
@@ -107,6 +109,16 @@ namespace AUTD3Sharp.Modulation
             return this;
         }
 
+        /// <summary>
+        /// Set sampling mode
+        /// </summary>
+        /// <param name="mode">sampling mode</param>
+        /// <returns></returns>
+        public Sine WithMode(SamplingMode mode)
+        {
+            _mode = mode;
+            return this;
+        }
 
         public static Fourier operator +(Sine a, Sine b)
             => new Fourier(a).AddComponent(b);
@@ -122,6 +134,8 @@ namespace AUTD3Sharp.Modulation
                 ptr = NativeMethodsBase.AUTDModulationSineWithPhase(ptr, _phase.Value);
             if (Config != null)
                 ptr = NativeMethodsBase.AUTDModulationSineWithSamplingConfig(ptr, Config.Value.Internal);
+            if (_mode != null)
+                ptr = NativeMethodsBase.AUTDModulationSineWithMode(ptr, _mode.Value);
             return ptr;
         }
     }

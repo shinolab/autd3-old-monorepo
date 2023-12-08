@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/12/2023
+ * Last Modified: 08/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -16,6 +16,8 @@ use autd3_driver::{common::EmitIntensity, defined::PI, derive::prelude::*};
 
 use num::integer::gcd;
 
+use super::sampling_mode::SamplingMode;
+
 /// Sine wave modulation
 #[derive(Modulation, Clone, Copy)]
 pub struct Sine {
@@ -24,6 +26,7 @@ pub struct Sine {
     phase: float,
     offset: EmitIntensity,
     config: SamplingConfiguration,
+    mode: SamplingMode,
 }
 
 impl Sine {
@@ -42,6 +45,7 @@ impl Sine {
             phase: 0.0,
             offset: EmitIntensity::MAX / 2,
             config: SamplingConfiguration::from_frequency(4e3).unwrap(),
+            mode: SamplingMode::ExactFrequency,
         }
     }
 
@@ -81,6 +85,16 @@ impl Sine {
         Self { phase, ..self }
     }
 
+    /// set sampling mode
+    ///
+    /// # Arguments
+    ///
+    /// * `mode` - Sampling mode
+    ///
+    pub fn with_mode(self, mode: SamplingMode) -> Self {
+        Self { mode, ..self }
+    }
+
     pub fn freq(&self) -> float {
         self.freq
     }
@@ -100,11 +114,27 @@ impl Sine {
 
 impl Modulation for Sine {
     fn calc(&self) -> Result<Vec<EmitIntensity>, AUTDInternalError> {
-        let sf = self.sampling_config().frequency() as usize;
-        let freq = (self.freq as usize).clamp(1, sf / 2);
-        let d = gcd(sf, freq);
-        let n = sf / d;
-        let rep = freq / d;
+        let (n, rep) = match self.mode {
+            SamplingMode::ExactFrequency => {
+                let sf = self.sampling_config().frequency() as usize;
+                if self.freq.fract() != 0.0 {
+                    return Err(AUTDInternalError::ModulationError(
+                        "Frequency must be integer".to_string(),
+                    ));
+                }
+                let freq = (self.freq as usize).clamp(1, sf / 2);
+                let d = gcd(sf, freq);
+                let n = sf / d;
+                let rep = freq / d;
+                (n, rep)
+            }
+            SamplingMode::SizeOptimized => {
+                let sf = self.sampling_config().frequency();
+                let freq = self.freq.clamp(0., sf / 2.);
+                let n = (sf / freq).round() as usize;
+                (n, 1)
+            }
+        };
         Ok((0..n)
             .map(|i| {
                 EmitIntensity::new(
@@ -132,9 +162,23 @@ mod tests {
             45, 69, 97,
         ];
         let m = Sine::new(150.);
-        for d in m.calc().unwrap().iter() {
-            print!("{}, ", d.value());
-        }
+        assert_approx_eq::assert_approx_eq!(m.sampling_config().frequency(), 4e3);
+        assert_eq!(expect.len(), m.calc().unwrap().len());
+        expect
+            .into_iter()
+            .zip(m.calc().unwrap().iter())
+            .for_each(|(e, a)| {
+                assert_eq!(e, a.value());
+            });
+    }
+
+    #[test]
+    fn test_sine_with_size_opt() {
+        let expect = [
+            127, 156, 184, 209, 229, 244, 252, 254, 249, 237, 219, 197, 170, 142, 112, 84, 57, 35,
+            17, 5, 0, 2, 10, 25, 45, 70, 98,
+        ];
+        let m = Sine::new(150.).with_mode(SamplingMode::SizeOptimized);
         assert_approx_eq::assert_approx_eq!(m.sampling_config().frequency(), 4e3);
         assert_eq!(expect.len(), m.calc().unwrap().len());
         expect
@@ -152,12 +196,21 @@ mod tests {
         assert_eq!(m.intensity(), EmitIntensity::MAX);
         assert_eq!(m.offset(), EmitIntensity::MAX / 2);
         assert_eq!(m.phase(), 0.0);
-
         let vec = m.calc().unwrap();
         assert!(!vec.is_empty());
         assert!(vec
             .iter()
             .all(|&x| x >= m.offset - m.intensity / 2 && x <= m.offset + m.intensity / 2));
+
+        let m = Sine::new(100.1);
+        assert_eq!(
+            m.calc(),
+            Err(AUTDInternalError::ModulationError(
+                "Frequency must be integer".to_string()
+            ))
+        );
+        let m = Sine::new(100.1).with_mode(SamplingMode::SizeOptimized);
+        assert!(m.calc().is_ok());
     }
 
     #[test]
