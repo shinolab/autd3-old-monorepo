@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/12/2023
+ * Last Modified: 07/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -137,6 +137,8 @@ impl<'a> IntoIterator for &'a mut Geometry {
 
 #[cfg(test)]
 pub mod tests {
+    use crate::defined::MILLIMETER;
+
     use super::*;
 
     macro_rules! assert_approx_eq_vec3 {
@@ -245,12 +247,16 @@ pub mod tests {
 
         geometry.set_sound_speed_from_temp(15.);
         geometry.iter().for_each(|dev| {
-            assert_approx_eq::assert_approx_eq!(dev.sound_speed, 340.29527186788846e3);
+            assert_approx_eq::assert_approx_eq!(
+                dev.sound_speed,
+                340.29527186788846e3 * MILLIMETER,
+                1e-3
+            );
         });
 
-        geometry.set_sound_speed(340e3);
+        geometry.set_sound_speed(340e3 * MILLIMETER);
         geometry.iter().for_each(|dev| {
-            assert_eq!(dev.sound_speed, 340e3);
+            assert_eq!(dev.sound_speed, 340e3 * MILLIMETER);
         });
     }
 
