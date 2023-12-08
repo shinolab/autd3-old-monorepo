@@ -3,7 +3,7 @@
 // Created Date: 14/09/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/11/2023
+// Last Modified: 08/12/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,16 +17,10 @@ open System.Threading.Tasks
 
 module FlagTest =
     let Test<'T> (autd : Controller<'T>) = 
-        autd.Geometry 
-            |> Seq.iter (fun dev -> 
-                dev.ForceFan <- true
-                dev.ReadsFPGAInfo <- true
-               )
-
         printfn "press any key to run fan..."
         System.Console.ReadKey true |> ignore;
 
-        (new UpdateFlags()) |> autd.SendAsync |> Async.AwaitTask |> Async.RunSynchronously |> ignore;
+        (new ConfigureForceFan(fun dev -> true), new ConfigureReadsFPGAInfo(fun dev -> true)) |> autd.SendAsync |> Async.AwaitTask |> Async.RunSynchronously |> ignore;
 
         let mutable fin = false;
         let th : Task =
@@ -48,10 +42,5 @@ module FlagTest =
         fin <- true;
         th.Wait();
         
-        autd.Geometry 
-            |> Seq.iter (fun dev -> 
-                dev.ForceFan <- false
-                dev.ReadsFPGAInfo <- false
-               )
+        (new ConfigureForceFan(fun dev -> false), new ConfigureReadsFPGAInfo(fun dev -> false)) |> autd.SendAsync |> Async.AwaitTask |> Async.RunSynchronously |> ignore;
 
-        (new UpdateFlags()) |> autd.SendAsync |> Async.AwaitTask |> Async.RunSynchronously |> ignore;

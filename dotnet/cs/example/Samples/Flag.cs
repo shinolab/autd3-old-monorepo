@@ -4,7 +4,7 @@
  * Created Date: 13/09/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/11/2023
+ * Last Modified: 08/12/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -19,16 +19,10 @@ internal static class FlagTest
 {
     public static async Task Test<T>(Controller<T> autd)
     {
-        foreach (var dev in autd.Geometry)
-        {
-            dev.ReadsFPGAInfo = true;
-            dev.ForceFan = true;
-        }
-
         Console.WriteLine("press any key to run fan...");
         Console.ReadKey(true);
 
-        await autd.SendAsync(new UpdateFlags());
+        await autd.SendAsync(new ConfigureForceFan(_ => true), new ConfigureReadsFPGAInfo(_ => true));
 
         var fin = false;
         var th = Task.Run(() =>
@@ -50,12 +44,6 @@ internal static class FlagTest
 
         th.Wait();
 
-        foreach (var dev in autd.Geometry)
-        {
-            dev.ReadsFPGAInfo = false;
-            dev.ForceFan = false;
-        }
-
-        await autd.SendAsync(new UpdateFlags());
+        await autd.SendAsync(new ConfigureForceFan(_ => false), new ConfigureReadsFPGAInfo(_ => false));
     }
 }
