@@ -1,8 +1,0 @@
-lib/
-*.zip
-*.tar.gz
-LICENSE
-build/
-bin/
-ThirdPartyNotice.txt
-README.md
