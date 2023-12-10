@@ -1,1 +1,0 @@
-autd.send(autd3::ConfigureForceFan([](const auto&) { return true; }));

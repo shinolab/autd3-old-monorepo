@@ -1,1 +1,0 @@
-const auto g = autd3::gain::Null().with_cache();
