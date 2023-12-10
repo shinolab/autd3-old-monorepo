@@ -1,9 +1,0 @@
-[submodule "src/autd3-link-twincat/3rdparty/ADS"]
-	path = src/autd3-link-twincat/3rdparty/ADS
-	url = https://github.com/Beckhoff/ADS.git
-[submodule "src/autd3-link-soem/3rdparty/SOEM"]
-	path = src/autd3-link-soem/3rdparty/SOEM
-	url = https://github.com/OpenEtherCATsociety/SOEM.git
-[submodule "tools/autd3-license-check"]
-	path = tools/autd3-license-check
-	url = https://github.com/shinolab/autd3-license-check.git

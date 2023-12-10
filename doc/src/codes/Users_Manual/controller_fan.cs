@@ -1,1 +1,0 @@
-autd.Send(new ConfigureForceFan(_ => true));
